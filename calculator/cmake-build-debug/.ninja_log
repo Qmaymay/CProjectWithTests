@@ -1,0 +1,7 @@
+# ninja log v5
+3	170	7831868995793956	build.ninja	17d9ba8a6dc2e79e
+7	162	7831868997631861	CMakeFiles/calculator_exe.dir/main.c.obj	9ad1f277e396e76c
+0	180	7831868997651862	CMakeFiles/calculator.dir/main.c.obj	3de7ccdb5cb8a301
+180	282	7831868998811861	libcalculator.dll	a6a6f9f7b6f1a104
+180	282	7831868998811861	libcalculator.dll.a	a6a6f9f7b6f1a104
+282	387	7831868999672913	calculator_exe.exe	69b64b9d46fe5779

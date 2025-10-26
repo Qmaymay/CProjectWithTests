@@ -1,0 +1,23 @@
+# C项目构建文件
+calculator/cmake-build-debug/
+calculator/cmake-build-release/
+*.o
+*.so
+*.dll
+*.dylib
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 系统
+.DS_Store
+Thumbs.db

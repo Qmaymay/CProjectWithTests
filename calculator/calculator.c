@@ -23,3 +23,18 @@ double divide(int a, int b) {
     }
     return (double)a / b;
 }
+
+// 新增：幂运算函数
+double power(double base, int exponent) {
+    if (exponent == 0) return 1.0;
+    if (exponent < 0) {
+        base = 1.0 / base;
+        exponent = -exponent;
+    }
+
+    double result = 1.0;
+    for (int i = 0; i < exponent; i++) {
+        result *= base;
+    }
+    return result;
+}

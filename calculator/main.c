@@ -11,6 +11,7 @@ int main() {
     printf("%d - %d = %d\n", a, b, subtract(a, b));
     printf("%d * %d = %d\n", a, b, multiply(a, b));
     printf("%d / %d = %.2f\n", a, b, divide(a, b));
+    printf("%.1f ^ %d = %.2f\n", 2.0, 3, power(2.0, 3));  // 新增测试
 
     return 0;
 }

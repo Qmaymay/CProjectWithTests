@@ -1,68 +1,52 @@
-# 定义这个 workflow 的名称，在 GitHub Actions 页面中显示为 "C Calculator CI"
 name: C Calculator CI
 
-# 每次你 git push 到 main/master 分支，或者有人提交 PR 时，都会自动运行测试。
-on:   # 定义什么时候触发这个 workflow
-  push:    # 当代码推送到以下分支时触发
-    branches: [ main, master ]    # 指定分支名称（兼容 main 和 master 两种命名）
-  pull_request:    # 当创建或更新拉取请求到这些分支时触发
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
     branches: [ main, master ]
 
-# GitHub 会启动一个全新的 Ubuntu 虚拟机来执行这个 job
-jobs:  # 一个 workflow 可以包含多个 job，它们会并行运行
-  build-and-test:   # job 的 ID（内部标识符）
-    name: Build and Test     # job 的显示名称
-    runs-on: ubuntu-latest   # 在最新的 Ubuntu 系统上运行
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
 
-    # 把你的 CProjectWithTests 整个仓库下载到虚拟机的当前目录
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4    # 使用别人写好的 Action（可重用的代码块）, GitHub 官方的 Action，用于下载你的仓库代码到虚拟机
+        uses: actions/checkout@v4
 
       - name: Install build dependencies
-        run: |   # 执行 shell 多行命令: 更新软件包列表; 安装软件包（-y 表示自动确认）cmake gcc python3 python3-pip
-          sudo apt-get update 
+        run: |
+          sudo apt-get update
           sudo apt-get install -y cmake gcc python3 python3-pip
 
-      # 确保使用特定版本的 Python，避免版本兼容问题
       - name: Set up Python
-        uses: actions/setup-python@v4   # GitHub 官方的 Python 环境设置 Action
-        with:    # 向 Action 传递参数
-          python-version: '3.10'   # 指定安装 Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-      - name: Create build directory   # 将构建产物与源代码分离
+      - name: Create build directory
         run: |
           mkdir -p build
           mkdir -p lib
 
-      # CMake 读取 calculator/CMakeLists.txt，生成 Makefile 或其他构建文件
       - name: Configure CMake
-        run: cmake -B build -S calculator
+        run: cmake -B build -S .  # 🔧 修改这里：从 calculator 改为 .
 
-      # 调用 GCC 编译 C 代码，生成共享库文件
       - name: Build project
         run: cmake --build build
 
-      # 确认共享库是否成功生成
       - name: Check built library
         run: |
           echo "检查生成的库文件:"
           ls -la lib/
           file lib/* || echo "没有库文件"
 
-      # 此时 Python 脚本通过 ctypes 加载刚才编译的共享库，调用 C 函数进行测试
       - name: Run Python tests
         run: |
           cd calculator_tests
           python test_calculator.py
 
-      # 纯输出信息步骤，用于在日志中清晰标记测试完成
       - name: Test status
         run: |
           echo "🎉 所有测试完成！"
-
-#  完整执行流程总结
-#  1.准备环境：启动 Ubuntu 虚拟机 → 下载代码 → 安装依赖
-#  2. 编译 C 代码：配置 CMake → 编译生成共享库
-#  3. 运行测试：Python 加载共享库 → 执行测试用例
-#  4. 报告结果：在 GitHub Actions 页面显示成功/失败

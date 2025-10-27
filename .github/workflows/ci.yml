@@ -40,7 +40,8 @@ jobs:
         run: |
           echo "检查生成的库文件:"
           ls -la lib/
-          file lib/* || echo "没有库文件"
+          echo "检查库中的符号:"
+          nm -D lib/libcalculator.so | grep power || echo "没有找到power函数"
 
       - name: Run Python tests
         run: |

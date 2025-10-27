@@ -90,8 +90,13 @@ def test_calculator():
     print(f"\n测试结果: {tests_passed}/{total_tests} 通过")
     return tests_passed == total_tests
 
+    # 在测试幂运算之前添加调试
+    print("调试信息:")
+    print(f"power函数地址: {hex(lib.power if hasattr(lib, 'power') else 0)}")
+
     # 新增4个幂运算测试
     result = lib.power(2.0, 3)
+    print(f"调试: power(2.0, 3) = {result}, 期望: 8.0")
     if abs(result - 8.0) < 0.001:
         print("✓ 幂运算测试通过: 2.0 ^ 3 = 8.0")
         tests_passed += 1
@@ -127,4 +132,3 @@ if __name__ == "__main__":
     success = test_calculator()
     sys.exit(0 if success else 1)
 
-    

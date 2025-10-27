@@ -1,4 +1,0 @@
-E:/C_language_learning/CProjectWithTests/calculator/cmake-build-debug/CMakeFiles/calculator.dir
-E:/C_language_learning/CProjectWithTests/calculator/cmake-build-debug/CMakeFiles/calculator_exe.dir
-E:/C_language_learning/CProjectWithTests/calculator/cmake-build-debug/CMakeFiles/edit_cache.dir
-E:/C_language_learning/CProjectWithTests/calculator/cmake-build-debug/CMakeFiles/rebuild_cache.dir

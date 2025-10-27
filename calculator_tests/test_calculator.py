@@ -27,12 +27,27 @@ def load_c_library():
 
 def test_calculator():
     """测试计算器函数"""
+    print("=== 开始调试 ===")
+
     try:
         lib = load_c_library()
+        print("✅ 库加载成功")
     except FileNotFoundError as e:
         print(f"❌ 无法加载C库: {e}")
         print("请先编译C项目: cd calculator && mkdir -p build && cd build && cmake .. && make")
         return False
+
+    # 详细检查所有函数
+    print("=== 检查函数是否存在 ===")
+    functions = ['add', 'subtract', 'multiply', 'divide', 'power']
+    for func in functions:
+        if hasattr(lib, func):
+            print(f"✅ 找到函数: {func}")
+            # 尝试获取函数地址
+            func_ptr = getattr(lib, func)
+            print(f"   函数地址: {hex(id(func_ptr))}")
+        else:
+            print(f"❌ 未找到函数: {func}")
 
     # 设置函数参数和返回类型
     lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
@@ -95,6 +110,7 @@ def test_calculator():
     print(f"power函数地址: {hex(lib.power if hasattr(lib, 'power') else 0)}")
 
     # 新增4个幂运算测试
+    print("=== 测试幂运算 ===")
     result = lib.power(2.0, 3)
     print(f"调试: power(2.0, 3) = {result}, 期望: 8.0")
     if abs(result - 8.0) < 0.001:

@@ -2,46 +2,51 @@ name: C Calculator CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
 
 jobs:
   build-and-test:
-    name: Build C project and run Python tests
+    name: Build and Test
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository code
+      - name: Checkout code
         uses: actions/checkout@v4
-        # 此步骤会下载你仓库的代码到虚拟环境
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake gcc python3 python3-pip
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-        # 配置Python环境，你的测试脚本需要它
 
-      - name: Install Python dependencies
+      - name: Create build directory
         run: |
-          python -m pip install --upgrade pip
-          # 如果测试脚本需要额外的库，例如pytest，可以在这里安装：
-          # pip install pytest
-        # 确保Python环境就绪
+          mkdir -p build
+          mkdir -p lib
 
       - name: Configure CMake
-        run: >
-          cmake -B ${{github.workspace}}/build
-          -DCMAKE_BUILD_TYPE=Release
-        # 此步骤在'build'目录中配置CMake[citation:9]
-        # CMake会根据CMakeLists.txt生成构建文件
+        run: cmake -B build -S calculator
 
       - name: Build project
-        run: cmake --build ${{github.workspace}}/build --config Release
-        # 编译C项目，生成共享库[citation:9]
+        run: cmake --build build
+
+      - name: Check built library
+        run: |
+          echo "检查生成的库文件:"
+          ls -la lib/
+          file lib/* || echo "没有库文件"
 
       - name: Run Python tests
         run: |
           cd calculator_tests
           python test_calculator.py
-        # 运行你的Python测试脚本来测试C共享库
+
+      - name: Test status
+        run: |
+          echo "🎉 所有测试完成！"

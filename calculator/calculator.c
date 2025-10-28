@@ -1,6 +1,7 @@
 ﻿#define CALCULATOR_EXPORTS
 #include "calculator.h"
 #include <stdio.h>
+#include <math.h>
 
 int add(int a, int b) { return a + b; }
 
@@ -22,9 +23,22 @@ int cube(int x) {
     return x * x * x;
 }
 
+int cube(int x) {
+    return x * x * x;
+}
+
 double sqrt(double x) {
     if (x < 0) {
-        return -1.0; // 错误处理：负数没有实数平方根
+        return -1.0; // 错误处理
     }
-    return sqrt(x); // 使用 math.h 的 sqrt 函数
+    if (x == 0.0) {
+        return 0.0;
+    }
+
+    // 牛顿迭代法
+    double result = x;
+    for (int i = 0; i < 20; i++) {
+        result = 0.5 * (result + x / result);
+    }
+    return result;
 }

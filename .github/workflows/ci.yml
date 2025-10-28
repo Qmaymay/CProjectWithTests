@@ -36,6 +36,11 @@ jobs:
       - name: Build project
         run: cmake --build build
 
+      - name: Create lib directory and copy library
+        run: |
+          mkdir -p lib
+          cp calculator/build/libcalculator.so lib/
+
       - name: Check built library
         run: |
           echo "检查生成的库文件:"

@@ -57,10 +57,20 @@ jobs:
           ls -la lib/
           file lib/libcalculator.so
 
-      - name: Create lib directory and copy library
+      - name: Verify built library
         run: |
+          echo "🔍 检查构建的库文件..."
+          ls -la lib/ || echo "lib目录不存在，正在创建..."
           mkdir -p lib
-          cp calculator/build/libcalculator.so lib/
+          # 如果库文件不存在，从构建目录复制
+          if [ ! -f "lib/libcalculator.so" ]; then
+              echo "从构建目录复制库文件..."
+              find . -name "libcalculator.so" -exec cp {} lib/ \;
+          fi
+          echo "📁 库文件内容:"
+          ls -la lib/
+          file lib/libcalculator.so
+          echo "✅ 库文件验证完成"
 
       - name: Check built library
         run: |

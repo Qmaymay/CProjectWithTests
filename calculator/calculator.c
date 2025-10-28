@@ -17,3 +17,14 @@ double divide(int a, int b) {
 }
 
 int square(int x) { return x * x; }
+
+int cube(int x) {
+    return x * x * x;
+}
+
+double sqrt(double x) {
+    if (x < 0) {
+        return -1.0; // 错误处理：负数没有实数平方根
+    }
+    return sqrt(x); // 使用 math.h 的 sqrt 函数
+}

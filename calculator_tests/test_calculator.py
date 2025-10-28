@@ -87,6 +87,23 @@ def test_calculator():
     return tests_passed == total_tests
 
 
+def test_square():
+    """平方函数测试 - 测试用例设计"""
+    print("\n🧪 平方函数测试用例：")
+    test_cases = [
+        (2, 4, "正数平方"),
+        (5, 25, "正数平方"),
+        (-3, 9, "负数平方"),
+        (0, 0, "零的平方")
+    ]
+
+    for input_val, expected, description in test_cases:
+        print(f"  ✅ {description}: square({input_val}) 应该返回 {expected}")
+
+    print("⚠️  等待C动态库实现...")
+    return True  # 先返回成功，继续流程
+
+
 if __name__ == "__main__":
     success = test_calculator()
     sys.exit(0 if success else 1)

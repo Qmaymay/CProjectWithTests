@@ -36,6 +36,27 @@ jobs:
       - name: Build project
         run: cmake --build build
 
+      - name: Find and copy library file
+        run: |
+          mkdir -p lib
+          # 查找库文件
+          LIB_FILE=$(find . -name "libcalculator.so" -type f | head -1)
+          if [ -n "$LIB_FILE" ]; then
+            echo "Found library at: $LIB_FILE"
+            cp "$LIB_FILE" lib/
+            echo "Library copied successfully"
+          else
+            echo "Error: Library file not found"
+            find . -name "*.so" -type f
+            exit 1
+          fi
+
+      - name: Verify library
+        run: |
+          echo "Library contents:"
+          ls -la lib/
+          file lib/libcalculator.so
+
       - name: Create lib directory and copy library
         run: |
           mkdir -p lib

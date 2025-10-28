@@ -25,58 +25,11 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Create build directory
-        run: |
-          mkdir -p build
-          mkdir -p lib
-
       - name: Configure CMake
         run: cmake -B build -S calculator
 
       - name: Build project
         run: cmake --build build
-
-      - name: Find and copy library file
-        run: |
-          mkdir -p lib
-          # 查找库文件
-          LIB_FILE=$(find . -name "libcalculator.so" -type f | head -1)
-          if [ -n "$LIB_FILE" ]; then
-            echo "Found library at: $LIB_FILE"
-            cp "$LIB_FILE" lib/
-            echo "Library copied successfully"
-          else
-            echo "Error: Library file not found"
-            find . -name "*.so" -type f
-            exit 1
-          fi
-
-      - name: Verify library
-        run: |
-          echo "Library contents:"
-          ls -la lib/
-          file lib/libcalculator.so
-
-      - name: Verify built library
-        run: |
-          echo "🔍 检查构建的库文件..."
-          ls -la lib/ || echo "lib目录不存在，正在创建..."
-          mkdir -p lib
-          # 如果库文件不存在，从构建目录复制
-          if [ ! -f "lib/libcalculator.so" ]; then
-              echo "从构建目录复制库文件..."
-              find . -name "libcalculator.so" -exec cp {} lib/ \;
-          fi
-          echo "📁 库文件内容:"
-          ls -la lib/
-          file lib/libcalculator.so
-          echo "✅ 库文件验证完成"
-
-      - name: Check built library
-        run: |
-          echo "检查生成的库文件:"
-          ls -la lib/
-          file lib/* || echo "没有库文件"
 
       - name: Run Python tests
         run: |

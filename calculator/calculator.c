@@ -23,9 +23,6 @@ int cube(int x) {
     return x * x * x;
 }
 
-int cube(int x) {
-    return x * x * x;
-}
 
 double sqrt(double x) {
     if (x < 0) {

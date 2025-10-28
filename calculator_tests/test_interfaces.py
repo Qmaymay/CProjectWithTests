@@ -2,8 +2,13 @@ import ctypes
 import os
 import sys
 
-# 加载共享库
-lib_path = os.path.join(os.path.dirname(__file__), '../lib/libcalculator.so')
+# 根据平台选择库文件
+if sys.platform == "win32":
+    lib_name = "libcalculator.dll"
+else:
+    lib_name = "libcalculator.so"
+
+lib_path = os.path.join(os.path.dirname(__file__), '../lib', lib_name)
 print(f"加载库：{lib_path}")
 
 try:
@@ -11,8 +16,18 @@ try:
     print("✅ 库加载成功")
 except Exception as e:
     print(f"❌ 库加载失败: {e}")
-    sys.exit(1)
 
+    # 在 Windows 上，尝试直接加载 DLL（不使用路径）
+    if sys.platform == "win32":
+        try:
+            lib = ctypes.CDLL("./libcalculator.dll")
+            print("✅ 库加载成功（直接加载）")
+        except Exception as e2:
+            print(f"❌ 直接加载也失败: {e2}")
+            sys.exit(1)
+    else:
+        sys.exit(1)
+        
 # 定义函数原型
 lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
 lib.add.restype = ctypes.c_int
@@ -28,6 +43,13 @@ lib.divide.restype = ctypes.c_double
 
 lib.square.argtypes = [ctypes.c_int]
 lib.square.restype = ctypes.c_int
+
+
+lib.cube.argtypes = [ctypes.c_int]
+lib.cube.restype = ctypes.c_int
+
+lib.sqrt.argtypes = [ctypes.c_double]
+lib.sqrt.restype = ctypes.c_double
 
 
 def test_add():
@@ -75,6 +97,37 @@ def test_square():
     print("✅ 平方接口测试通过：3² = 9")
 
 
+# 添加测试函数：
+def test_cube():
+    """测试立方接口"""
+    print("🧪 测试立方接口...")
+    result = lib.cube(3)
+    assert result == 27, f"立方测试失败: 3³ = {result}, 期望 27"
+    print("✅ 立方接口测试通过：3³ = 27")
+
+    result2 = lib.cube(4)
+    assert result2 == 64, f"立方测试失败: 4³ = {result2}, 期望 64"
+    print("✅ 立方接口测试通过：4³ = 64")
+
+
+def test_sqrt():
+    """测试平方根接口"""
+    print("🧪 测试平方根接口...")
+    result = lib.sqrt(9.0)
+    assert abs(result - 3.0) < 0.0001, f"平方根测试失败: √9 = {result}, 期望 3.0"
+    print("✅ 平方根接口测试通过：√9 = 3.0")
+
+    result2 = lib.sqrt(2.0)
+    expected = 1.4142
+    assert abs(result2 - expected) < 0.0001, f"平方根测试失败: √2 = {result2}, 期望 {expected}"
+    print("✅ 平方根接口测试通过：√2 ≈ 1.4142")
+
+    # 测试负数
+    result3 = lib.sqrt(-1.0)
+    assert result3 == -1.0, f"平方根测试失败: √(-1) = {result3}, 期望 -1.0"
+    print("✅ 平方根接口测试通过：√(-1) = -1.0 (错误处理)")
+
+
 def run_all_tests():
     """运行所有接口测试"""
     print("\n🚀 开始接口单独测试...")
@@ -85,7 +138,9 @@ def run_all_tests():
         test_subtract,
         test_multiply,
         test_divide,
-        test_square
+        test_square,
+        test_cube,      # 新增
+        test_sqrt       # 新增
     ]
 
     passed = 0

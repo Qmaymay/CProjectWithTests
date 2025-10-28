@@ -1,109 +1,64 @@
 import ctypes
 import os
-import sys
+
+# 加载共享库
+lib_path = os.path.join(os.path.dirname(__file__), '../lib/libcalculator.so')
+print(f"加载库：{lib_path}")
+
+try:
+    lib = ctypes.CDLL(lib_path)
+except Exception as e:
+    print(f"库加载失败: {e}")
+    exit(1)
+
+# 定义函数原型
+lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
+lib.add.restype = ctypes.c_int
+
+lib.subtract.argtypes = [ctypes.c_int, ctypes.c_int]
+lib.subtract.restype = ctypes.c_int
+
+lib.multiply.argtypes = [ctypes.c_int, ctypes.c_int]
+lib.multiply.restype = ctypes.c_int
+
+lib.divide.argtypes = [ctypes.c_int, ctypes.c_int]
+lib.divide.restype = ctypes.c_double
+
+lib.square.argtypes = [ctypes.c_int]
+lib.square.restype = ctypes.c_int
 
 
-def load_c_library():
-    """动态加载C共享库"""
-    # 添加lib目录到路径
-    lib_dir = os.path.join(os.path.dirname(__file__), '..', 'lib')
-
-    # 根据操作系统选择库文件
-    if sys.platform == "win32":
-        lib_name = "calculator.dll"
-    elif sys.platform == "darwin":
-        lib_name = "libcalculator.dylib"
-    else:
-        lib_name = "libcalculator.so"
-
-    lib_path = os.path.join(lib_dir, lib_name)
-
-    if not os.path.exists(lib_path):
-        raise FileNotFoundError(f"找不到C库文件: {lib_path}")
-
-    print(f"加载库: {lib_path}")
-    return ctypes.CDLL(lib_path)
-
-
-def test_calculator():
-    """测试计算器函数"""
-    try:
-        lib = load_c_library()
-    except FileNotFoundError as e:
-        print(f"❌ 无法加载C库: {e}")
-        print("请先编译C项目: cd calculator && mkdir -p build && cd build && cmake .. && make")
-        return False
-
-    # 设置函数参数和返回类型
-    lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
-    lib.add.restype = ctypes.c_int
-
-    lib.subtract.argtypes = [ctypes.c_int, ctypes.c_int]
-    lib.subtract.restype = ctypes.c_int
-
-    lib.multiply.argtypes = [ctypes.c_int, ctypes.c_int]
-    lib.multiply.restype = ctypes.c_int
-
-    lib.divide.argtypes = [ctypes.c_int, ctypes.c_int]
-    lib.divide.restype = ctypes.c_double
-
-    # 运行测试
-    tests_passed = 0
-    total_tests = 4
+def run_tests():
+    """运行所有计算器测试"""
+    print("运行计算器测试...")
 
     # 测试加法
     result = lib.add(10, 5)
-    if result == 15:
-        print("✓ 加法测试通过: 10 + 5 = 15")
-        tests_passed += 1
-    else:
-        print(f"❌ 加法测试失败: 期望15，得到{result}")
+    assert result == 15, f"加法测试失败: 10 + 5 = {result}"
+    print(f"加法测试通过：10 + 5 = {result}")
 
     # 测试减法
     result = lib.subtract(10, 5)
-    if result == 5:
-        print("✓ 减法测试通过: 10 - 5 = 5")
-        tests_passed += 1
-    else:
-        print(f"❌ 减法测试失败: 期望5，得到{result}")
+    assert result == 5, f"减法测试失败: 10 - 5 = {result}"
+    print(f"减法测试通过：10 - 5 = {result}")
 
     # 测试乘法
     result = lib.multiply(10, 5)
-    if result == 50:
-        print("✓ 乘法测试通过: 10 * 5 = 50")
-        tests_passed += 1
-    else:
-        print(f"❌ 乘法测试失败: 期望50，得到{result}")
+    assert result == 50, f"乘法测试失败: 10 * 5 = {result}"
+    print(f"乘法测试通过：10 * 5 = {result}")
 
     # 测试除法
     result = lib.divide(10, 5)
-    if abs(result - 2.0) < 0.001:
-        print("✓ 除法测试通过: 10 / 5 = 2.0")
-        tests_passed += 1
-    else:
-        print(f"❌ 除法测试失败: 期望2.0，得到{result}")
+    assert result == 2.0, f"除法测试失败: 10 / 5 = {result}"
+    print(f"除法测试通过：10 / 5 = {result}")
 
-    print(f"\n测试结果: {tests_passed}/{total_tests} 通过")
-    return tests_passed == total_tests
+    # 测试平方
+    result = lib.square(5)
+    assert result == 25, f"平方测试失败: 5² = {result}"
+    print(f"平方测试通过：5² = {result}")
 
-
-def test_square():
-    """平方函数测试 - 测试用例设计"""
-    print("\n🧪 平方函数测试用例：")
-    test_cases = [
-        (2, 4, "正数平方"),
-        (5, 25, "正数平方"),
-        (-3, 9, "负数平方"),
-        (0, 0, "零的平方")
-    ]
-
-    for input_val, expected, description in test_cases:
-        print(f"  ✅ {description}: square({input_val}) 应该返回 {expected}")
-
-    print("⚠️  等待C动态库实现...")
-    return True  # 先返回成功，继续流程
+    print("所有测试通过！")
 
 
 if __name__ == "__main__":
-    success = test_calculator()
-    sys.exit(0 if success else 1)
+    run_tests()

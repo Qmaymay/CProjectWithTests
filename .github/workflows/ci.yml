@@ -45,6 +45,9 @@ jobs:
       - name: Run Python tests
         run: |
           cd calculator_tests
+          echo "=== 运行接口测试 ==="
+          python test_interfaces.py
+          echo "=== 运行计算器测试 ==="
           python test_calculator.py
 
       - name: Test status

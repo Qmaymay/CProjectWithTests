@@ -1,5 +1,9 @@
 ﻿cmake_minimum_required(VERSION 3.10)
 project(calculator)
-set(CMAKE_C_STANDARD 11)
+
+# 创建共享库
 add_library(calculator SHARED calculator.c)
-set_target_properties(calculator PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../lib)
+
+# 创建可执行文件，命名为 main
+add_executable(main main.c)
+target_link_libraries(main calculator)

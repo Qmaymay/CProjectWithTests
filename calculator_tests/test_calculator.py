@@ -28,6 +28,7 @@ lib.square.argtypes = [ctypes.c_int]
 lib.square.restype = ctypes.c_int
 
 
+
 def run_tests():
     """运行所有计算器测试"""
     print("运行计算器测试...")

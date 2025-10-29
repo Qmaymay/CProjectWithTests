@@ -27,7 +27,7 @@ except Exception as e:
             sys.exit(1)
     else:
         sys.exit(1)
-        
+
 # 定义函数原型
 lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
 lib.add.restype = ctypes.c_int

@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 int main() {
-    printf("ç®€å•è®¡ç®—å™¨\n");
+    printf("¼òµ¥¼ÆËãÆ÷\n");
     printf("==========\n");
 
     int a = 10, b = 5;

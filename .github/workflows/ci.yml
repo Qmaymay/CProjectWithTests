@@ -39,6 +39,13 @@ jobs:
           echo "=== 运行计算器测试 ==="
           python test_calculator.py
 
+      - name: Debug build output
+        run: |
+            echo "=== 构建目录内容 ==="
+            find calculator -name "*.so" -o -name "*.dll" | head -10
+            echo "=== lib目录内容 ==="
+            ls -la lib/ || echo "lib目录不存在"
+
       - name: Test status
         run: |
           echo "🎉 所有测试完成！"

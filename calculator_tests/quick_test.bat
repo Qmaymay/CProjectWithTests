@@ -5,14 +5,10 @@ echo.
 echo 1. Building C library...
 cd ..
 call build.bat
-if %errorlevel% neq 0 (
-    echo Build failed
-    pause
-    exit /b 1
-)
 
 echo.
 echo 2. Running Python tests...
+cd calculator_tests
 python test_interfaces.py
 if %errorlevel% equ 0 (
     echo.

@@ -5,7 +5,6 @@ if exist build rmdir /s /q build
 cmake -B build -G "MinGW Makefiles"
 if %errorlevel% neq 0 (
     echo CMake configuration failed!
-    pause
     exit /b 1
 )
 cmake --build build
@@ -16,5 +15,7 @@ if %errorlevel% equ 0 (
     echo Build successful!
 ) else (
     echo Build failed!
+    exit /b 1
 )
-pause
+
+

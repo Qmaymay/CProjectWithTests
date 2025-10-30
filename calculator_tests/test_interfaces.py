@@ -53,7 +53,9 @@ except Exception as e:
 argtypes：函数参数类型（两个整数）
 restype：返回值类型（整数）
 """
+# 告诉Python："add函数需要两个整数参数"
 lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
+# 告诉Python："add函数会返回一个整数"
 lib.add.restype = ctypes.c_int
 
 lib.subtract.argtypes = [ctypes.c_int, ctypes.c_int]

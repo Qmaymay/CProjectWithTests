@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """
 在calculator_tests中运行，但调用根目录的测试脚本
+详细调试(quick_test.bat的"增强版")
+1, 专门解决PyCharm环境下的路径问题
+2, 提供更详细的调试信息
+3, 作为批处理文件的备份方案
 """
 
-import subprocess
+import subprocess   # 运行外部命令（如调用bat文件）
 import sys
 import os
 
@@ -12,6 +16,11 @@ def main():
     print("🎯 从calculator_tests调用根目录测试")
 
     # 获取项目根目录
+    """
+    abspath(__file__)：找到我自己的绝对位置
+    两次dirname：从calculator_tests回到项目根目录
+    拼出simple_test.py的完整路径   
+    """
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     root_test_script = os.path.join(project_root, "simple_test.py")
 
@@ -25,9 +34,9 @@ def main():
     # 调用根目录的测试脚本
     print("\n🔧 调用根目录测试脚本...")
     result = subprocess.run([
-        sys.executable,  # 使用当前Python解释器
-        root_test_script
-    ], cwd=project_root)  # 在项目根目录运行
+        sys.executable,     # 用当前正在运行的Python
+        root_test_script    # 要运行的脚本
+    ], cwd=project_root)    # 在项目根目录运行
 
     if result.returncode == 0:
         print("\n🎉 测试完成！")
@@ -37,6 +46,7 @@ def main():
         return False
 
 
+# 造物主函数 - 自动创建缺失的测试脚本
 def create_simple_test_script(project_root):
     """如果simple_test.py不存在，创建它"""
     script_content = '''#!/usr/bin/env python3

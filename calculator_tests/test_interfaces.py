@@ -1,4 +1,16 @@
-import ctypes
+
+# TODO CMakeLists.txt告诉编译器如何把calculator.c变成libcalculator.dll，
+#  test_interfaces.py直接使用这个成果
+#  lib是仓库，test_interfaces.py是取货人
+
+"""
+PowerShell
+
+cd calculator_tests
+.\test_Interface.py
+"""
+
+import ctypes   # 让Python能调用C语言的桥梁
 import os
 import sys
 
@@ -8,9 +20,17 @@ if sys.platform == "win32":
 else:
     lib_name = "libcalculator.so"
 
+# 拼出库文件的完整路径
+"""
+__file__：当前文件位置
+../lib：上级目录的lib文件夹
+最终路径如：E:/.../calculator_tests/../lib/libcalculator.dll
+"""
 lib_path = os.path.join(os.path.dirname(__file__), '../lib', lib_name)
 print(f"加载库：{lib_path}")
 
+
+# 尝试加载C库，失败就退出
 try:
     lib = ctypes.CDLL(lib_path)
     print("✅ 库加载成功")
@@ -29,6 +49,10 @@ except Exception as e:
         sys.exit(1)
 
 # 定义函数原型
+"""
+argtypes：函数参数类型（两个整数）
+restype：返回值类型（整数）
+"""
 lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
 lib.add.restype = ctypes.c_int
 

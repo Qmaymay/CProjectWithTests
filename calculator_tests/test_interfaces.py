@@ -154,6 +154,56 @@ def test_sqrt():
     print("✅ 平方根接口测试通过：√(-1) = -1.0 (错误处理)")
 
 
+def test_power():
+    """测试幂运算接口"""
+    print("🧪 测试幂运算接口...")
+
+    # 设置函数原型
+    lib.power.argtypes = [ctypes.c_double, ctypes.c_double]
+    lib.power.restype = ctypes.c_double
+
+    # 测试用例
+    test_cases = [
+        (2.0, 3.0, 8.0, "2的3次方"),
+        (2.0, 0.0, 1.0, "任何数的0次方"),
+        (5.0, -1.0, 0.2, "正数的负指数"),
+        (0.0, 5.0, 0.0, "0的正数次方"),
+        (1.0, 100.0, 1.0, "1的任何次方"),
+        (4.0, 0.5, 2.0, "平方根"),
+        (8.0, 1.0 / 3.0, 2.0, "立方根"),
+        (-2.0, 3.0, -8.0, "负底数的奇数次方"),
+        (-2.0, 2.0, 4.0, "负底数的偶数次方"),
+    ]
+
+    all_passed = True
+    for base, exp, expected, description in test_cases:
+        result = lib.power(base, exp)
+
+        # 浮点数比较使用容差
+        if abs(result - expected) < 0.0001:
+            print(f"  ✅ {description}: {base}^{exp} = {result}")
+        else:
+            print(f"  ❌ {description}: {base}^{exp} = {result}, 期望 {expected}")
+            all_passed = False
+
+    # 测试错误情况
+    error_cases = [
+        (0.0, -2.0, "0的负数次方"),
+        (-4.0, 0.5, "负底数的小数次方"),
+    ]
+
+    for base, exp, description in error_cases:
+        result = lib.power(base, exp)
+        print(f"  🔶 错误处理测试 {description}: 结果 = {result}")
+
+    if all_passed:
+        print("✅ 幂运算接口测试通过")
+    else:
+        print("❌ 幂运算接口测试失败")
+
+    return all_passed
+
+
 def run_all_tests():
     """运行所有接口测试"""
     print("\n🚀 开始接口单独测试...")
@@ -165,8 +215,9 @@ def run_all_tests():
         test_multiply,
         test_divide,
         test_square,
-        test_cube,      # 新增
-        test_sqrt       # 新增
+        test_cube,    # 新增
+        test_sqrt,    # 新增
+        test_power    # 20251031新增
     ]
 
     passed = 0

@@ -22,6 +22,13 @@ CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 Makefile
+cmake-build-*/
+
+
+# 其他构建文件
+.ninja_deps
+.ninja_log
+build.ninja
 
 # 系统文件
 .DS_Store

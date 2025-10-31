@@ -1,8 +1,0 @@
-# ninja log v5
-9	68	7834186256546393	calculator/CMakeFiles/main.dir/main.c.obj	1c1da226d8953a1a
-0	79	7834186256656026	calculator/CMakeFiles/calculator.dir/calculator.c.obj	306a76f7fa971b8d
-79	161	7834186257429032	calculator/libcalculator.dll	f206b3f1924a9ec8
-79	161	7834186257429032	calculator/libcalculator.dll.a	f206b3f1924a9ec8
-161	242	7834186258251694	calculator/main.exe	c0a5f2de87b0ec5e
-2	60	7834186476571877	calculator/CMakeFiles/main.dir/main.c.obj	1c1da226d8953a1a
-60	143	7834186477387642	calculator/main.exe	c0a5f2de87b0ec5e

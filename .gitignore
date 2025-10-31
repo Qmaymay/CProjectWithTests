@@ -23,8 +23,12 @@ CMakeFiles/
 cmake_install.cmake
 Makefile
 cmake-build-*/
-cmake-build-debug/
-cmake-build-release/
+
+
+# 其他构建文件
+.ninja_deps
+.ninja_log
+build.ninja
 
 # 系统文件
 .DS_Store

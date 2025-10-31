@@ -9,5 +9,6 @@ double divide(int a, int b);
 int square(int x);
 int cube(int x);
 double sqrt(double x);
+double power(double base, double exponent);  // 支持浮点指数
 
 #endif

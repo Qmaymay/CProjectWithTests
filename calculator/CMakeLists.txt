@@ -15,5 +15,5 @@ target_include_directories(calculator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(calculator m)
 
 # 创建可执行文件，命名为 main
-add_executable(main main.c)
-target_link_libraries(main calculator)
+add_executable(calculator_app main.c)
+target_link_libraries(calculator_app calculator)

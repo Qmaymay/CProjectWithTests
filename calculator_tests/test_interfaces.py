@@ -7,7 +7,7 @@
 PowerShell
 
 cd calculator_tests
-.\test_Interface.py  23456789
+.\test_Interface.py  234567891  23654987
 """
 
 import ctypes   # 让Python能调用C语言的桥梁

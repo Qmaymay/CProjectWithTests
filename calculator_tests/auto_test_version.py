@@ -77,14 +77,22 @@ def update_test_version():
     # 3. 检查C++版本是否变化
     c_version_changed = (c_major != current_major or c_minor != current_minor)
 
+    # 4. 检查测试文件在暂存区是否有变更
+    test_files_changed = check_test_files_changed()
+
+    # 🎯 新的逻辑：综合考虑两种情况
     if c_version_changed:
         print(f"🔄 C++版本变化: {current_major}.{current_minor} → {c_major}.{c_minor}")
-        # C++版本变化，重新从0开始计数
-        new_rev = 0
+        if test_files_changed:
+            # C版本变化 + 测试文件变化 → 从1开始
+            new_rev = 1
+            print(f"🔧 同时检测到测试文件变更，版本号从1开始")
+        else:
+            # 只有C版本变化 → 从0开始
+            new_rev = 0
+            print("ℹ️  仅C版本变化，测试版本从0开始")
     else:
-        # C++版本未变，检查测试文件在暂存区是否有变更
-        test_files_changed = check_test_files_changed()
-
+        # C版本未变
         if test_files_changed:
             new_rev = current_rev + 1
             print(f"🔧 test_interfaces.py在本次提交中有变更，版本号: {current_rev} → {new_rev}")
@@ -92,7 +100,7 @@ def update_test_version():
             new_rev = current_rev
             print("ℹ️  test_interfaces.py在本次提交中无变更，版本号不变")
 
-    # 4. 更新测试版本文件
+    # 5. 更新测试版本文件
     new_content = f"""# 测试版本管理
 # 自动生成，请勿手动修改
 
@@ -113,13 +121,12 @@ def get_test_version():
 
     print(f"✅ 测试版本: {c_major}.{c_minor}.{new_rev}")
 
-    # 5. 如果版本文件有变化，自动添加到本次commit
+    # 6. 自动添加到本次commit
     try:
         subprocess.run(["git", "add", "calculator_tests/test_version.py"], check=True)
         print("📦 版本文件已添加到暂存区")
     except:
         print("⚠️  无法自动添加版本文件到暂存区")
-
 
 def main():
     """主函数"""

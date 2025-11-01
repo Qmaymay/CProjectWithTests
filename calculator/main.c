@@ -25,7 +25,7 @@ int main() {
     printf("%.2f ^ 2 = %.2f\n", (double)a, sqrt((double)a));
     printf("%d ^ %d = %.2f\n", a, b, power(a,b));
     //
-    // ≤‚ ‘∞Ê±æ∫≈ 00000 222222 2323323
+    // ≤‚ ‘∞Ê±æ∫≈ 00000 222222 2323323  666
 
     return 0;
 }

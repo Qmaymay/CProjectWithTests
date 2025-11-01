@@ -13,10 +13,9 @@ int square(int x);
 int cube(int x);
 double sqrt(double x);
 double power(double base, double exponent);  // 支持浮点指数
-int add2(int a, int b); // 测试新增功能版本号变化
 
 //
-//测试新增功能版本号变化 123 258
+//测试新增功能版本号变化 123 258 7895456
 
 
 

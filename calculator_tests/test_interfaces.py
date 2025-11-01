@@ -242,7 +242,7 @@ def run_all_tests():
         print(f"❌ 失败的测试: {', '.join(failed_tests)}")
         return False
     else:
-        print("🎉 所有接口测试通过！")  # 测试版本号
+        print("🎉 所有接口测试通过！")  # 测试版本号123456
         return True
 
 

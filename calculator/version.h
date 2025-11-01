@@ -6,15 +6,15 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-// ÊÖ¶¯Î¬»¤°æ±¾ºÅ - ÓĞÖØ´ó¸üĞÂÊ±²Å¸Ä
+// æ‰‹åŠ¨ç»´æŠ¤ç‰ˆæœ¬å· - æœ‰é‡å¤§æ›´æ–°æ—¶æ‰æ”¹
 #define CALC_MAJOR_VERSION 1
 #define CALC_MINOR_VERSION 9
-#define CALC_PATCH_VERSION 0
-#define CALC_VERSION "1.9.0"
-
-// °æ±¾ĞÅÏ¢º¯Êı
-static inline const char* get_version(void) {
-    return CALC_VERSION;
-}
-
-#endif
+#define CALC_PATCH_VERSION 1
+//#define CALC_VERSION "1.9.1"
+//
+//// ç‰ˆæœ¬ä¿¡æ¯å‡½æ•°
+//static inline const char* get_version(void) {
+//    return CALC_VERSION;
+//}
+//
+//#endif

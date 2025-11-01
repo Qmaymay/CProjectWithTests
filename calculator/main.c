@@ -23,6 +23,6 @@ int main() {
            "= %d\n", a, cube(a));
     printf("%.2f ^ 2 = %.2f\n", (double)a, sqrt((double)a));
     printf("%d ^ %d = %.2f\n", a, b, power(a,b));
-
+    //
     return 0;
 }

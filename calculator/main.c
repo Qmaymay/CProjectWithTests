@@ -9,7 +9,6 @@
 
 
 int main() {
-    printf("Version: %s\n", get_version());  // 输出 "1.9" 而不是 "1.9.0"
     printf("Calculator Version:简单计算器\n");
     printf("简单计算器\n");
     printf("==========\n");

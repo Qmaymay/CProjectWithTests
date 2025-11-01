@@ -1,13 +1,14 @@
-# 测试版本管理
-# 自动生成，请勿手动修改
+# Test Version Management
+    # Auto-generated, do not edit manually
 
-C_MAJOR = 1
-C_MINOR = 8
-TEST_REVISION = 0
+    C_MAJOR = 1
+    C_MINOR = 8
+    TEST_REVISION = 0
 
-TEST_VERSION = f"{C_MAJOR}.{C_MINOR}.{TEST_REVISION}"
+    TEST_VERSION = f"{C_MAJOR}.{C_MINOR}.{TEST_REVISION}"
 
 
-def get_test_version():
-    """获取当前测试版本号"""
-    return TEST_VERSION
+    def get_test_version():
+        """Get current test version"""
+        return TEST_VERSION
+    

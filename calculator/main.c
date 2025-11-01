@@ -1,30 +1,69 @@
 /*
- * TODO calculator_app ÏÂµãÂÌÉ«Èı½Ç ÔËĞĞ,
- * CLion ÓĞÁ½ÖÖÔËĞĞÄ£Ê½£ºCMake Ä£Ê½£ºÍ¨¹ı CMakeLists.txt£¬
- * ÕıÈ·Á´½ÓËùÓĞÒÀµ¥ÎÄ¼şÄ£Ê½£º¿ìËÙ²âÊÔµ¥¸öÎÄ¼ş£¬µ«ÎŞ·¨´¦Àí¸´ÔÓÒÀÀµ
- * Óë²âÊÔpython´úÂë¹²Ïí¶¯Ì¬¿âÊ±£¬main.c ÏÂµãÂÌÉ«Èı½ÇÖ»»á±àÒëmain.c
+ * TODO calculator_app ä¸‹ç‚¹ç»¿è‰²ä¸‰è§’ è¿è¡Œ,
+ * CLion æœ‰ä¸¤ç§è¿è¡Œæ¨¡å¼ï¼šCMake æ¨¡å¼ï¼šé€šè¿‡ CMakeLists.txtï¼Œ
+ * æ­£ç¡®é“¾æ¥æ‰€æœ‰ä¾å•æ–‡ä»¶æ¨¡å¼ï¼šå¿«é€Ÿæµ‹è¯•å•ä¸ªæ–‡ä»¶ï¼Œä½†æ— æ³•å¤„ç†å¤æ‚ä¾èµ–
+ * ä¸æµ‹è¯•pythonä»£ç å…±äº«åŠ¨æ€åº“æ—¶ï¼Œmain.c ä¸‹ç‚¹ç»¿è‰²ä¸‰è§’åªä¼šç¼–è¯‘main.c
  * */
 #include "calculator.h"
 #include <stdio.h>
 
 
 int main() {
-    printf("Calculator Version:¼òµ¥¼ÆËãÆ÷\n");
-    printf("¼òµ¥¼ÆËãÆ÷\n");
-    printf("==========\n");
+    printf("Simple Calculator\n");
+    printf("================\n");
+
     int a = 20, b = 10;
 
+    printf("Basic Operations:\n");
     printf("%d + %d = %d\n", a, b, add(a, b));
     printf("%d - %d = %d\n", a, b, subtract(a, b));
     printf("%d * %d = %d\n", a, b, multiply(a, b));
     printf("%d / %d = %.2f\n", a, b, divide(a, b));
     printf("%d ^ 2 = %d\n", a, square(a));
-    printf("%d ^ 3 "
-           "= %d\n", a, cube(a));
-    printf("%.2f ^ 2 = %.2f\n", (double)a, sqrt((double)a));
+    printf("%d ^ 3 = %d\n", a, cube(a));
+    printf("sqrt(%.2f) = %.2f\n", (double)a, sqrt((double)a));
     printf("%d ^ %d = %.2f\n", a, b, power(a,b));
-    //
-    // ²âÊÔ°æ±¾ºÅ 00000 222222 2323323  666
+
+    printf("\nTrigonometric Functions Test\n");
+    printf("============================\n");
+
+    // è§’åº¦åˆ¶è®¡ç®—
+    double degrees_sin = trig_calc(30.0, "degrees", "sin");
+    printf("sin(30 degrees) = %.6f\n", degrees_sin);
+
+    double degrees_cos = trig_calc(45.0, "degrees", "cos");
+    printf("cos(45 degrees) = %.6f\n", degrees_cos);
+
+    double degrees_tan = trig_calc(60.0, "degrees", "tan");
+    printf("tan(60 degrees) = %.6f\n", degrees_tan);
+
+    // å¼§åº¦åˆ¶è®¡ç®—
+    double radians_sin = trig_calc(1.047, "radians", "sin");
+    printf("sin(1.047 radians) = %.6f\n", radians_sin);
+
+    double radians_cos = trig_calc(0.785, "radians", "cos");
+    printf("cos(0.785 radians) = %.6f\n", radians_cos);
+
+    double radians_tan = trig_calc(1.047, "radians", "tan");
+    printf("tan(1.047 radians) = %.6f\n", radians_tan);
+
+    // åä¸‰è§’å‡½æ•°
+    double degrees_asin = trig_calc(0.5, "degrees", "asin");
+    printf("asin(0.5) = %.6f degrees\n", degrees_asin);
+
+    double degrees_acos = trig_calc(0.5, "degrees", "acos");
+    printf("acos(0.5) = %.6f degrees\n", degrees_acos);
+
+    double degrees_atan = trig_calc(1.0, "degrees", "atan");
+    printf("atan(1.0) = %.6f degrees\n", degrees_atan);
+
+    // è½¬æ¢å‡½æ•°
+    double to_radians_result = trig_calc(180.0, "degrees", "to_radians");
+    printf("180 degrees = %.6f radians\n", to_radians_result);
+
+    double to_degrees_result = trig_calc(3.14159, "radians", "to_degrees");
+    printf("3.14159 radians = %.6f degrees\n", to_degrees_result);
 
     return 0;
 }
+

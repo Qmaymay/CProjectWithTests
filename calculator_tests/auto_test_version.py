@@ -102,19 +102,19 @@ def update_test_version():
 
     # 5. 更新测试版本文件
     new_content = f"""# Test Version Management
-    # Auto-generated, do not edit manually
+# Auto-generated, do not edit manually
 
-    C_MAJOR = {c_major}
-    C_MINOR = {c_minor}
-    TEST_REVISION = {new_rev}
+C_MAJOR = {c_major}
+C_MINOR = {c_minor}
+TEST_REVISION = {new_rev}
 
-    TEST_VERSION = f"{{C_MAJOR}}.{{C_MINOR}}.{{TEST_REVISION}}"
+TEST_VERSION = f"{{C_MAJOR}}.{{C_MINOR}}.{{TEST_REVISION}}"
 
 
-    def get_test_version():
-        \"\"\"Get current test version\"\"\"
-        return TEST_VERSION
-    """
+def get_test_version():
+    \"\"\"Get current test version\"\"\"
+    return TEST_VERSION
+"""
 
     with open("calculator_tests/test_version.py", "w") as f:
         f.write(new_content)

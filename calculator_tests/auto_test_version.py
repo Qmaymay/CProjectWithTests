@@ -7,9 +7,17 @@ import re
 
 def update_test_version():
     # 读取C版本前两位
-    with open("../calculator/version.h", "r") as f:
-        content = f.read()
-
+    try:
+        with open("../calculator/version.h", "r", encoding="utf-8") as f:
+            content = f.read()
+    except UnicodeDecodeError:
+        try:
+            with open("../calculator/version.h", "r", encoding="gbk") as f:
+                content = f.read()
+        except:
+            # 如果还是失败，用二进制读取
+            with open("../calculator/version.h", "rb") as f:
+                content = f.read().decode('utf-8', errors='ignore')
     major = int(re.search(r'CALC_MAJOR_VERSION\s+(\d+)', content).group(1))
     minor = int(re.search(r'CALC_MINOR_VERSION\s+(\d+)', content).group(1))
 

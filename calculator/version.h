@@ -7,8 +7,8 @@
 
 // C开发只管前两位，第三位永远为0
 #define CALC_MAJOR_VERSION 1
-#define CALC_MINOR_VERSION 12
-#define CALC_VERSION "1.12.0"  // 第三位固定为0
+#define CALC_MINOR_VERSION 13
+#define CALC_VERSION "1.13.0"  // 第三位固定为0
 
 
 static inline const char* get_version(void) {

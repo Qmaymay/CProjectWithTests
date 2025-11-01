@@ -120,5 +120,5 @@ double trig_calc(double input, const char* angle_mode, const char* func) {
     if (strcmp(func, "to_radians") == 0) return is_degrees ? radians : input;
     if (strcmp(func, "to_degrees") == 0) return is_degrees ? input : input * 57.295779513;
 
-    return 0.0;g
+    return 0.0;
 }

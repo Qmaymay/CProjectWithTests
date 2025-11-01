@@ -15,8 +15,7 @@ double sqrt(double x);
 double power(double base, double exponent);  // 支持浮点指数
 
 //
-//测试新增功能版本号变化 123 258 7895456
-
+//测试新增功能版本号变化 123
 
 
 #endif

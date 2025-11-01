@@ -38,7 +38,7 @@ Thumbs.db
 *.tmp
 *.temp
 
-# 其他
+# 其他文件
 "__pycache__/"
 "*.pyc"
 "*.pyo"

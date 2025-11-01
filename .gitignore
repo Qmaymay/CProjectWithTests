@@ -37,3 +37,7 @@ Thumbs.db
 # 临时文件
 *.tmp
 *.temp
+
+"__pycache__/"
+"*.pyc"
+"*.pyo"

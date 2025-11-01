@@ -5,12 +5,11 @@
  * 与测试python代码共享动态库时，main.c 下点绿色三角只会编译main.c
  * */
 #include "calculator.h"
-#include "version.h"
 #include <stdio.h>
 
 
 int main() {
-    printf("Calculator Version:\n");
+    printf("Calculator Version:简单计算器\n");
     printf("简单计算器\n");
     printf("==========\n");
     int a = 20, b = 10;

@@ -9,6 +9,7 @@
 
 
 int main() {
+    printf("Version: %s\n", get_version());  // 输出 "1.9" 而不是 "1.9.0"
     printf("Calculator Version:简单计算器\n");
     printf("简单计算器\n");
     printf("==========\n");
@@ -24,7 +25,7 @@ int main() {
     printf("%.2f ^ 2 = %.2f\n", (double)a, sqrt((double)a));
     printf("%d ^ %d = %.2f\n", a, b, power(a,b));
     //
-    // 测试版本号
+    // 测试版本号 1232456
 
     return 0;
 }

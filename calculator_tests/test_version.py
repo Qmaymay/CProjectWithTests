@@ -2,7 +2,7 @@
 # 自动生成，请勿手动修改
 
 C_MAJOR = 1
-C_MINOR = 19
+C_MINOR = 8
 TEST_REVISION = 0
 
 TEST_VERSION = f"{C_MAJOR}.{C_MINOR}.{TEST_REVISION}"

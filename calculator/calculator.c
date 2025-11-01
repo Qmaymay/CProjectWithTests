@@ -1,5 +1,4 @@
-﻿#define CALCULATOR_EXPORTS
-#include "calculator.h"
+﻿#include "calculator.h"
 #include <stdio.h>
 #include <math.h>
 

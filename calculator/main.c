@@ -1,7 +1,9 @@
 #include "calculator.h"
+
 #include <stdio.h>
 
 int main() {
+    printf("Calculator Version: %s\n", get_version());  // 直接使用
     printf("简单计算器\n");
     printf("==========\n");
 

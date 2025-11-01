@@ -6,7 +6,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../lib)
 
 # 创建共享库
-add_library(calculator SHARED calculator.c)
+add_library(calculator SHARED calculator.c
+        version.h
+)
 
 # 设置包含目录
 target_include_directories(calculator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

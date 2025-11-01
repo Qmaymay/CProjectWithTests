@@ -14,6 +14,8 @@ import ctypes   # 让Python能调用C语言的桥梁
 import os
 import sys
 
+from test_version import get_test_version, sync_with_c_version
+
 # 根据平台选择库文件
 if sys.platform == "win32":
     lib_name = "libcalculator.dll"
@@ -206,7 +208,8 @@ def test_power():
 
 def run_all_tests():
     """运行所有接口测试"""
-    print("\n🚀 开始接口单独测试...")
+    print(f"\n🧪 计算器测试套件 v{get_test_version()}")
+    sync_with_c_version(lib)
     print("=" * 50)
 
     tests = [

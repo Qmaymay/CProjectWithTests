@@ -1,7 +1,7 @@
 """
 测试版本 - 同步C前两位，自增第三位
 """
-
+import sys
 import re
 
 
@@ -48,5 +48,8 @@ def update_test_version():
 
 
 if __name__ == "__main__":
-    update_test_version()
+    if len(sys.argv) > 1 and sys.argv[1] == "test_bug":
+        update_test_version()
+    else:
+        update_test_version()  # 默认也执行
 

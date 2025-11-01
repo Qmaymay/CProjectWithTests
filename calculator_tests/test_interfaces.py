@@ -7,14 +7,14 @@
 PowerShell
 
 cd calculator_tests
-.\test_Interface.py
+.\test_Interface.py  23456789
 """
 
 import ctypes   # 让Python能调用C语言的桥梁
 import os
 import sys
 
-from test_version import get_test_version, sync_with_c_version
+from test_version import get_test_version
 
 # 根据平台选择库文件
 if sys.platform == "win32":
@@ -209,7 +209,6 @@ def test_power():
 def run_all_tests():
     """运行所有接口测试"""
     print(f"\n🧪 计算器测试套件 v{get_test_version()}")
-    sync_with_c_version(lib)
     print("=" * 50)
 
     tests = [
@@ -243,11 +242,11 @@ def run_all_tests():
         print(f"❌ 失败的测试: {', '.join(failed_tests)}")
         return False
     else:
-        print("🎉 所有接口测试通过！")  # 测试版本号123456789
+        print("🎉 所有接口测试通过！")  # 测试版本号
         return True
 
 
 if __name__ == "__main__":
     success = run_all_tests()
     sys.exit(0 if success else 1)
-# 测试Git推送 
+# 测试Git推送

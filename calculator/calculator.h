@@ -13,9 +13,9 @@ int square(int x);
 int cube(int x);
 double sqrt(double x);
 double power(double base, double exponent);  // 支持浮点指数
+// 函数声明 - 3个参数，明确无歧义
+double trig_calc(double input, const char* angle_mode, const char* func);
 
-//
-//测试新增功能版本号变化 123 897 99955  444888 333 0000
 
 
 

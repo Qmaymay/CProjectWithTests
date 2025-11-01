@@ -1,6 +1,7 @@
 ﻿#include "calculator.h"
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 int add(int a, int b) { return a + b; }
 
@@ -91,4 +92,33 @@ double power(double base, double exponent) {
 
     // 一般情况：使用数学库的pow函数（经过优化）
     return pow(base, exponent);
+}
+
+// 三角函数计算
+double trig_calc(double input, const char* angle_mode, const char* func) {
+    int is_degrees = (strcmp(angle_mode, "degrees") == 0);
+
+    double radians = input;
+    if (is_degrees) {
+        radians = input * 3.141592653589793 / 180.0;
+    }
+
+    if (strcmp(func, "sin") == 0) return sin(radians);
+    if (strcmp(func, "cos") == 0) return cos(radians);
+    if (strcmp(func, "tan") == 0) return tan(radians);
+
+    // 修复反三角函数的错误处理
+    if (strcmp(func, "asin") == 0) {
+        if (input < -1.0 || input > 1.0) return 0.0;  // 错误处理
+        return asin(input) * (is_degrees ? 57.295779513 : 1.0);
+    }
+    if (strcmp(func, "acos") == 0) {
+        if (input < -1.0 || input > 1.0) return 0.0;  // 错误处理
+        return acos(input) * (is_degrees ? 57.295779513 : 1.0);
+    }
+    if (strcmp(func, "atan") == 0) return atan(input) * (is_degrees ? 57.295779513 : 1.0);
+    if (strcmp(func, "to_radians") == 0) return is_degrees ? radians : input;
+    if (strcmp(func, "to_degrees") == 0) return is_degrees ? input : input * 57.295779513;
+
+    return 0.0;
 }

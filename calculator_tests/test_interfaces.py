@@ -206,6 +206,132 @@ def test_power():
     return all_passed
 
 
+def test_trig_functions():
+    """测试三角函数接口"""
+    print("🧪 测试三角函数接口...")
+
+    # 定义三角函数函数原型
+    lib.trig_calc.argtypes = [ctypes.c_double, ctypes.c_char_p, ctypes.c_char_p]
+    lib.trig_calc.restype = ctypes.c_double
+
+    # 测试用例：角度制三角函数
+    angle_test_cases = [
+        (30.0, "sin", 0.5, "30° sin"),
+        (45.0, "cos", 0.707107, "45° cos"),
+        (60.0, "tan", 1.732051, "60° tan"),
+        (0.0, "sin", 0.0, "0° sin"),
+        (90.0, "sin", 1.0, "90° sin"),
+        (180.0, "cos", -1.0, "180° cos"),
+    ]
+
+    # 测试用例：弧度制三角函数
+    radian_test_cases = [
+        (0.0, "sin", 0.0, "0弧度 sin"),
+        (1.5708, "sin", 1.0, "π/2弧度 sin"),  # π/2 ≈ 1.5708
+        (3.14159, "cos", -1.0, "π弧度 cos"),
+        (0.785398, "tan", 1.0, "π/4弧度 tan"),  # π/4 ≈ 0.785398
+    ]
+
+    # 测试用例：反三角函数
+    arc_test_cases = [
+        (0.5, "asin", 30.0, "asin(0.5)"),
+        (0.866025, "asin", 60.0, "asin(0.866025)"),
+        (0.5, "acos", 60.0, "acos(0.5)"),
+        (0.0, "atan", 0.0, "atan(0)"),
+        (1.0, "atan", 45.0, "atan(1)"),
+    ]
+
+    # 测试用例：角度弧度转换
+    conversion_test_cases = [
+        (180.0, "to_radians", 3.141593, "180°转弧度"),
+        (90.0, "to_radians", 1.570796, "90°转弧度"),
+        (3.14159, "to_degrees", 180.0, "π转角度"),
+        (1.5708, "to_degrees", 90.0, "π/2转角度"),
+    ]
+
+    all_passed = True
+    total_tests = 0
+    passed_tests = 0
+
+    # 测试角度制三角函数
+    print("  📐 角度制三角函数:")
+    for angle, func, expected, desc in angle_test_cases:
+        total_tests += 1
+        result = lib.trig_calc(angle, b"degrees", func.encode())
+        if abs(result - expected) < 0.0001:
+            print(f"    ✅ {desc}: {result:.6f}")
+            passed_tests += 1
+        else:
+            print(f"    ❌ {desc}: {result:.6f}, 期望 {expected:.6f}")
+            all_passed = False
+
+    # 测试弧度制三角函数
+    print("  📏 弧度制三角函数:")
+    for radian, func, expected, desc in radian_test_cases:
+        total_tests += 1
+        result = lib.trig_calc(radian, b"radians", func.encode())
+        if abs(result - expected) < 0.0001:
+            print(f"    ✅ {desc}: {result:.6f}")
+            passed_tests += 1
+        else:
+            print(f"    ❌ {desc}: {result:.6f}, 期望 {expected:.6f}")
+            all_passed = False
+
+    # 测试反三角函数
+    print("  🔄 反三角函数:")
+    for value, func, expected, desc in arc_test_cases:
+        total_tests += 1
+        result = lib.trig_calc(value, b"degrees", func.encode())
+        if abs(result - expected) < 0.1:  # 反三角函数精度要求放宽
+            print(f"    ✅ {desc}: {result:.2f}°")
+            passed_tests += 1
+        else:
+            print(f"    ❌ {desc}: {result:.2f}°, 期望 {expected:.2f}°")
+            all_passed = False
+
+    # 测试转换函数
+    print("  🔁 角度弧度转换:")
+    for value, func, expected, desc in conversion_test_cases:
+        total_tests += 1
+        mode = b"degrees" if func == "to_radians" else b"radians"
+        result = lib.trig_calc(value, mode, func.encode())
+        if abs(result - expected) < 0.001:
+            print(f"    ✅ {desc}: {result:.6f}")
+            passed_tests += 1
+        else:
+            print(f"    ❌ {desc}: {result:.6f}, 期望 {expected:.6f}")
+            all_passed = False
+
+    # 测试边界和错误情况
+    print("  ⚠️  边界情况测试:")
+    edge_cases = [
+        (-45.0, "sin", -0.707107, "负角度sin"),
+        (360.0, "cos", 1.0, "360° cos"),
+        (1.5, "asin", 0.0, "asin超出范围"),  # asin(1.5)应该返回0（错误处理）
+        (-2.0, "acos", 0.0, "acos超出范围"),  # acos(-2)应该返回0（错误处理）
+    ]
+
+    for value, func, expected, desc in edge_cases:
+        total_tests += 1
+        mode = b"degrees"
+        result = lib.trig_calc(value, mode, func.encode())
+        if abs(result - expected) < 0.0001:
+            print(f"    ✅ {desc}: {result:.6f}")
+            passed_tests += 1
+        else:
+            print(f"    🔶 {desc}: {result:.6f}, 期望 {expected:.6f}")
+            # 边界情况不标记为失败，只记录
+
+    print(f"  📊 三角函数测试: {passed_tests}/{total_tests} 通过")
+
+    if all_passed:
+        print("✅ 三角函数接口测试通过")
+    else:
+        print("❌ 三角函数接口测试失败")
+
+    return all_passed
+
+
 def run_all_tests():
     """运行所有接口测试"""
     print(f"\n🧪 计算器测试套件 v{get_test_version()}")
@@ -219,7 +345,8 @@ def run_all_tests():
         test_square,
         test_cube,    # 新增
         test_sqrt,    # 新增
-        test_power    # 20251031新增
+        test_power,    # 20251031新增
+        test_trig_functions
     ]
 
     passed = 0

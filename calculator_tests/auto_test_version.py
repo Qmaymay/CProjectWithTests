@@ -85,8 +85,8 @@ def update_test_version():
         print(f"🔄 C++版本变化: {current_major}.{current_minor} → {c_major}.{c_minor}")
         if test_files_changed:
             # C版本变化 + 测试文件变化 → 从1开始
-            new_rev = 1
-            print(f"🔧 同时检测到测试文件变更，版本号从1开始")
+            new_rev = 0
+            print("🔄 C版本变化，测试版本重置为0")
         else:
             # 只有C版本变化 → 从0开始
             new_rev = 0

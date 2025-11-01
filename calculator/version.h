@@ -7,7 +7,7 @@
 
 // C开发只管前两位，第三位永远为0
 #define CALC_MAJOR_VERSION 1
-#define CALC_MINOR_VERSION 9
+#define CALC_MINOR_VERSION 10
 #define CALC_VERSION "1.9.0"  // 第三位固定为0
 
 

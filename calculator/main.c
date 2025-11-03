@@ -107,12 +107,15 @@ void test_trig_functions(void) {
     // 无效角度模式测试
     double invalid_result = trig_calc(30.0, "invalid_mode", "sin", &error);
     if (error != CALC_SUCCESS) {
+        (void)invalid_result;  // 明确表示故意不使用这个变量
         printf("三角函数错误: %s\n", get_last_error());
+
     }
 
     // 无效函数名测试
     invalid_result = trig_calc(30.0, "degrees", "invalid_func", &error);
     if (error != CALC_SUCCESS) {
+        (void)invalid_result;
         printf("函数名错误: %s\n", error_code_to_string(error));
     }
 }

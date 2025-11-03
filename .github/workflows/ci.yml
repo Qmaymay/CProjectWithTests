@@ -2,48 +2,103 @@ name: C Calculator CI
 
 on:
   push:
-    branches: [ main, master, enhance/** ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, master, enhance/** ]
+    branches: [main, develop]
 
 jobs:
-  build-and-test:
-    name: Build and Test
+  # 第一个任务：安全扫描（并行执行，不阻塞构建）
+  security-scan:
+    name: Security Scan
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install build dependencies
+      - name: Basic security checks
+        run: |
+          echo "🔒 基础安全扫描..."
+          # 检查是否不小心提交了密码、密钥等敏感信息
+          if git log -p | grep -i "password\|secret\|key" | head -5; then
+            echo "⚠️  检测到可能的敏感信息"
+          else
+            echo "✅ 未发现敏感信息"
+          fi
+          
+          # 检查C代码中不安全函数
+          echo "🔍 扫描C代码安全问题..."
+          find calculator -name "*.c" -exec grep -l "strcpy\|gets\|sprintf" {} \; | head -5 || echo "✅ 未发现不安全函数"
+
+  # 第二个任务：构建和测试（跨平台）
+  build-and-test:
+    name: Build and Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            build-dir: build_linux
+          - os: windows-latest
+            build-dir: build_windows
+
+    steps:
+      # 第1步：获取代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 第2步：安装工具（分系统）
+      - name: Install build dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake gcc python3 python3-pip
+          sudo apt-get install -y cmake gcc python3 python3-pip build-essential
 
+      - name: Install build dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install mingw -y
+
+      # 第3步：设置Python环境
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
+      # 第4步：配置CMake
       - name: Configure CMake
-        run: cmake -B build -S calculator
+        run: cmake -B ${{ matrix.build-dir }} -S calculator
+        env:
+          CMAKE_BUILD_TYPE: Release
 
+      # 第5步：编译项目
       - name: Build project
-        run: cmake --build build
+        run: cmake --build ${{ matrix.build-dir }} --config Release
 
-      - name: Run Python tests
+      # 第6步：运行测试
+      - name: Run Python interface tests
         run: |
           cd calculator_tests
-          echo "=== 运行接口测试 ==="
-          python test_interfaces.py
+          echo "=== 运行接口测试 ==="  
+          python test_interfaces.py --verbose
 
-      - name: Debug build output
+      # 第7步：显示构建产物信息
+      - name: Build artifacts info
         run: |
-            echo "=== 构建目录内容 ==="
-            find calculator -name "*.so" -o -name "*.dll" | head -10
-            echo "=== lib目录内容 ==="
-            ls -la lib/ || echo "lib目录不存在"
+          echo "=== 构建产物信息 ==="
+          find . -name "*.so" -o -name "*.dll" -o -name "*.exe" | while read file; do
+            echo "📦 $(basename "$file"): $(dirname "$file")"
+            if command -v file &> /dev/null; then
+              file "$file" || true
+            fi
+          done
 
-      - name: Test status
-        run: |
-          echo "🎉 所有测试完成！"
+      # 第8步：打包成品（只有测试通过才执行）
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: calculator-${{ matrix.os }}
+          path: |
+            lib/
+            */build/
+          retention-days: 7

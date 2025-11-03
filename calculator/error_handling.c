@@ -58,7 +58,7 @@ bool is_valid_trig_function(const char* func) {
             "to_radians", "to_degrees"
     };
 
-    for (int i = 0; i < sizeof(valid_funcs)/sizeof(valid_funcs[0]); i++) {
+    for (int  i = 0; i < (int)(sizeof(valid_funcs)/sizeof(valid_funcs[0])); i++) {
         if (strcmp(func, valid_funcs[i]) == 0) return true;
     }
     return false;

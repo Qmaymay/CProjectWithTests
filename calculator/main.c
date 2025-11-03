@@ -134,7 +134,9 @@ void test_validation_functions(void) {
            is_valid_trig_function("tan") ? "有效" : "无效");
 
     // 测试无效输入
-    double invalid_num = 0.0 / 0.0;  // 制造 NaN
+//    double invalid_num = 0.0 / 0.0;  // 制造 NaN
+    double zero = 0.0;
+    double invalid_num = zero / zero;  // 运行时计算，编译时不会检测
     printf("验证 NaN 数字: %s\n", is_valid_number(invalid_num) ? "有效" : "无效");
 }
 

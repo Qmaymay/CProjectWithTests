@@ -78,9 +78,15 @@ jobs:
       # 第6步：运行测试
       - name: Run Python interface tests
         run: |
+          chcp 65001
+          # 复制库文件到测试期望的位置
+          copy calculator\build_windows\Release\*.dll ..\lib\
+          copy calculator\build_windows\Release\*.exe ..\lib\
           cd calculator_tests
           echo "=== 运行接口测试 ==="  
           python test_interfaces.py --verbose
+        env:
+          PYTHONIOENCODING: utf-8
 
       # 第7步：显示构建产物信息
       - name: Build artifacts info

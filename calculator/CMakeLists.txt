@@ -7,19 +7,8 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # 针对MSVC编译器设置UTF-8编码
 if(MSVC)
-    add_compile_options("/utf-8")
-endif()
-
-# 编译器特定设置
-if(MSVC)
-    # MSVC编译器设置
-    add_compile_options(/W4)
-else()
-    # GCC/Clang编译器设置
-    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
-    if(NOT WIN32)
-        add_compile_options(-fPIC)
-    endif()
+    # 禁用特定编码警告
+    add_compile_options("/wd4828")
 endif()
 
 # 设置跨平台的库输出目录
@@ -34,6 +23,16 @@ add_library(calculator SHARED calculator.c
         error_handling.h
 )
 
+# 针对MSVC的设置
+if(MSVC)
+    # 确保同时生成导入库
+    set_target_properties(calculator PROPERTIES
+            WINDOWS_EXPORT_ALL_SYMBOLS ON
+    )
+
+    # 或者禁用特定警告
+    target_compile_options(calculator PRIVATE "/wd4244;/wd4723")
+endif()
 
 # 设置包含目录: 它解决了C/C++项目中的一个基本问题：头文件查找。
 target_include_directories(calculator
@@ -51,3 +50,13 @@ endif()
 add_executable(calculator_app main.c)
 target_link_libraries(calculator_app calculator)
 
+# 针对MSVC的设置
+if(MSVC)
+    # 确保同时生成导入库
+    set_target_properties(calculator PROPERTIES
+            WINDOWS_EXPORT_ALL_SYMBOLS ON
+    )
+
+    # 或者禁用特定警告
+    target_compile_options(calculator PRIVATE "/wd4244;/wd4723")
+endif()

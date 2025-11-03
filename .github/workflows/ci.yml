@@ -78,12 +78,11 @@ jobs:
       # 第6步：运行测试
       - name: Run Python interface tests
         run: |
-#          cmd /c "chcp 65001 > nul"
           mkdir ..\lib
           copy calculator\build_windows\Release\calculator.dll ..\lib\
           copy calculator\build_windows\Release\calculator_app.exe ..\lib\
+
           cd calculator_tests
-          echo "=== 运行接口测试 ==="  
           python test_interfaces.py --verbose
         env:
           PYTHONIOENCODING: utf-8

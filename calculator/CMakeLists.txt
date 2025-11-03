@@ -5,6 +5,11 @@ project(calculator LANGUAGES C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+# 针对MSVC编译器设置UTF-8编码
+if(MSVC)
+    add_compile_options("/utf-8")
+endif()
+
 # 编译器特定设置
 if(MSVC)
     # MSVC编译器设置

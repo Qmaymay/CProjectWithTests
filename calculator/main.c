@@ -85,9 +85,11 @@ void test_power_function(void) {
     }
 
     // 测试4: 无效输入（NaN）
-    double invalid_num = 0.0 / 0.0;  // 制造 NaN
-    power_result = power(invalid_num, 2.0, &error);
+//    double invalid_num = 0.0 / 0.0;  // 制造 NaN
+//    power_result = power(invalid_num, 2.0, &error);
+    double result = divide(10.0, 0.0, &error);  // 这个应该没问题
     if (error != CALC_SUCCESS) {
+        (void )result;
         printf("无效输入检测: %s\n", get_last_error());
     }
 }

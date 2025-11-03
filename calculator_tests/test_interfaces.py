@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # TODO CMakeLists.txt告诉编译器如何把calculator.c变成libcalculator.dll，
 #  test_interfaces.py直接使用这个成果
@@ -12,9 +14,16 @@ cd calculator_tests
 
 import ctypes   # 让Python能调用C语言的桥梁
 import os
+import io
 import sys
 
 from test_version import get_test_version
+
+# 设置标准输出编码为 UTF-8
+if sys.stdout.encoding != 'UTF-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+if sys.stderr.encoding != 'UTF-8':
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 # 根据平台选择库文件
 if sys.platform == "win32":

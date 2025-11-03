@@ -66,22 +66,14 @@ lib.subtract.restype = ctypes.c_int
 lib.multiply.argtypes = [ctypes.c_int, ctypes.c_int]
 lib.multiply.restype = ctypes.c_int
 
-
 lib.divide.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
 lib.divide.restype = ctypes.c_double
-# lib.divide.argtypes = [ctypes.c_int, ctypes.c_int]
-# lib.divide.restype = ctypes.c_double
-
 
 lib.square.argtypes = [ctypes.c_int]
 lib.square.restype = ctypes.c_int
 
-
 lib.cube.argtypes = [ctypes.c_int]
 lib.cube.restype = ctypes.c_int
-
-# lib.sqrt_calc.argtypes = [ctypes.c_double]
-# lib.sqrt_calc.restype = ctypes.c_double
 
 lib.sqrt_calc.argtypes = [ctypes.c_double, ctypes.POINTER(ctypes.c_int)]
 lib.sqrt_calc.restype = ctypes.c_double
@@ -184,10 +176,6 @@ def test_power():
 
     error = ctypes.c_int(0)
 
-    # 设置函数原型
-    # lib.power.argtypes = [ctypes.c_double, ctypes.c_double]
-    # lib.power.restype = ctypes.c_double
-
     lib.power.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.POINTER(ctypes.c_int)]
     lib.power.restype = ctypes.c_double
 
@@ -243,9 +231,6 @@ def test_trig_functions():
     # 定义三角函数函数原型
     lib.trig_calc.argtypes = [ctypes.c_double, ctypes.c_char_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
     lib.trig_calc.restype = ctypes.c_double
-
-    # lib.trig_calc.argtypes = [ctypes.c_double, ctypes.c_char_p, ctypes.c_char_p]
-    # lib.trig_calc.restype = ctypes.c_double
 
     # 测试用例：角度制三角函数
     angle_test_cases = [

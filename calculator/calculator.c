@@ -11,7 +11,7 @@ int subtract(int a, int b) { return a - b; }
 int multiply(int a, int b) { return a * b; }
 
 double divide(int a, int b, CalcErrorCode* error) {
-    if (error) *error = CALC_SUCCESS;
+    if (error) *error = CALC_SUCCESS;  // 有点想flag的功能
 
     if (b == 0) {
         set_error("Division by zero: %d / %d", a, b);

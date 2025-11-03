@@ -76,11 +76,26 @@ jobs:
         run: cmake --build ${{ matrix.build-dir }} --config Release
 
       # 第6步：运行测试
-      - name: Run Python interface tests
+      # 第6步：运行测试（Windows）
+      - name: Run Python interface tests (Windows)
+        if: matrix.os == 'windows-latest'
         run: |
-          mkdir ..\lib
+          md ..\lib
           copy calculator\build_windows\Release\calculator.dll ..\lib\
           copy calculator\build_windows\Release\calculator_app.exe ..\lib\
+
+          cd calculator_tests
+          python test_interfaces.py --verbose
+        env:
+          PYTHONIOENCODING: utf-8
+
+      # 第6步：运行测试（Linux）
+      - name: Run Python interface tests (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p ../lib
+          cp calculator/build_linux/libcalculator.so ../lib/
+          cp calculator/build_linux/calculator_app ../lib/
 
           cd calculator_tests
           python test_interfaces.py --verbose

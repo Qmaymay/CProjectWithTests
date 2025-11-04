@@ -68,19 +68,23 @@ jobs:
         run: |
           echo "=== 最终库文件验证 ==="
           echo "lib 目录内容:"
-          ls -la lib/ 2>/dev/null || dir lib 2>/dev/null || echo "lib 目录不存在"
 
-          # 检查是否有库文件
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            if exist lib\*.dll (exit 0) else (exit 1)
+          # 使用 find 命令，它在两个平台都可用（Windows 有 find.exe）
+          find lib -name "*.so" -o -name "*.dll" 2>/dev/null | while read file; do
+            echo "📦 找到库文件: $file"
+          done
+
+          # 检查是否找到任何库文件
+          if find lib -name "*.so" -o -name "*.dll" 2>/dev/null | grep -q .; then
+            echo "✅ 库文件生成成功"
           else
-            if [ -n "$(find lib -name '*.so' -o -name '*.dll' 2>/dev/null)" ]; then
-              echo "✅ 库文件生成成功"
-            else
-              echo "❌ 没有生成库文件"
-              exit 1
-            fi
+            echo "❌ 没有生成库文件"
+            echo "当前目录结构:"
+            find . -name "*.so" -o -name "*.dll" | head -10
+            exit 1
           fi
+          
+
       - name: Run Python interface tests
         run: |
           cd calculator_tests

@@ -87,14 +87,34 @@ jobs:
       - name: Build (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
+          echo "=== 开始构建 ==="
           cd calculator
           cmake -B build
           cmake --build build
-          
+
+          echo "=== 构建完成，查看生成的文件 ==="
+          find . -name "*.so" -o -name "*.a" | head -20
+
+          echo "=== 查看 build 目录内容 ==="
+          ls -la build/
+
+          echo "=== 复制库文件 ==="
           cd ..
           mkdir -p lib
           find calculator/build -name "*.so" -exec cp {} lib/ \;
+
+          echo "=== 复制后的 lib 目录 ==="
           ls -la lib/
+
+          echo "=== 验证库文件 ==="
+          file lib/* 2>/dev/null || echo "lib目录中没有文件"
+
+      - name: Debug - 查看项目结构
+        run: |
+          echo "=== 完整项目结构 ==="
+          find . -type f -name "*.so" -o -name "*.dll" -o -name "*.c" -o -name "CMakeLists.txt" | sort
+          echo "=== calculator_tests 目录 ==="
+          ls -la calculator_tests/
 
       # 第5步：运行测试
       - name: Run Python interface tests

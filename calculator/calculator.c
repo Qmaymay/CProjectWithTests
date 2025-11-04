@@ -4,13 +4,13 @@
 #include <string.h>
 
 // 简单的函数不需要错误参数
-int add(int a, int b) { return a + b; }
+CALC_API int add(int a, int b) { return a + b; }
 
-int subtract(int a, int b) { return a - b; }
+CALC_API int subtract(int a, int b) { return a - b; }
 
-int multiply(int a, int b) { return a * b; }
+CALC_API int multiply(int a, int b) { return a * b; }
 
-double divide(int a, int b, CalcErrorCode* error) {
+CALC_API double divide(int a, int b, CalcErrorCode* error) {
     if (error) *error = CALC_SUCCESS;  // 有点想flag的功能
 
     if (b == 0) {
@@ -21,14 +21,14 @@ double divide(int a, int b, CalcErrorCode* error) {
     return (double)a / b; 
 }
 
-int square(int x) { return x * x; }
+CALC_API int square(int x) { return x * x; }
 
-int cube(int x) {
+CALC_API int cube(int x) {
     return x * x * x;
 }
 
 // sqrt_calc避免与内置函数sqrt重名
-double sqrt_calc(double x, CalcErrorCode* error) {
+CALC_API double sqrt_calc(double x, CalcErrorCode* error) {
     if (error) *error = CALC_SUCCESS;
 
     // 使用输入验证函数
@@ -65,7 +65,7 @@ double sqrt_calc(double x, CalcErrorCode* error) {
  * ✅ 完善的错误处理和边界情况
  * ✅ 使用数学库优化性能
  */
-double power(double base, double exponent, CalcErrorCode* error) {
+CALC_API double power(double base, double exponent, CalcErrorCode* error) {
     // 1. 初始化错误码为成功
     if (error) *error = CALC_SUCCESS;
 
@@ -121,7 +121,7 @@ double power(double base, double exponent, CalcErrorCode* error) {
     return pow(base, exponent);
 }
 // 三角函数计算
-double trig_calc(double input, const char* angle_mode, const char* func,
+CALC_API double trig_calc(double input, const char* angle_mode, const char* func,
                  CalcErrorCode* error) {
     if (error) *error = CALC_SUCCESS;
 

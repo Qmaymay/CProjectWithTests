@@ -116,6 +116,26 @@ jobs:
           echo "=== calculator_tests 目录 ==="
           ls -la calculator_tests/
 
+
+    - name: Debug - 测试前检查
+      run: |
+      echo "=== 测试前项目结构 ==="
+      pwd
+      ls -la
+      echo "=== lib目录 ==="
+      ls -la lib/ 2>/dev/null || echo "lib目录不存在"
+      echo "=== calculator/build目录 ==="
+      ls -la calculator/build/ 2>/dev/null || echo "calculator/build目录不存在"
+      echo "=== 所有.so文件 ==="
+      find . -name "*.so" 2>/dev/null || echo "没有找到.so文件"
+
+  - name: 运行测试
+    run: |
+      cd calculator_tests
+      python test_interfaces.py  
+      
+      
+
       # 第5步：运行测试
       - name: Run Python interface tests
         run: |

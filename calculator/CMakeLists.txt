@@ -18,6 +18,12 @@ add_library(calculator SHARED calculator.c
         error_handling.h
 )
 
+# 设置输出属性（确保生成 .so 文件）
+set_target_properties(calculator PROPERTIES
+        OUTPUT_NAME "calculator"
+        PREFIX ""
+        SUFFIX ""
+)
 
 # 设置包含目录: 它解决了C/C++项目中的一个基本问题：头文件查找。
 target_include_directories(calculator

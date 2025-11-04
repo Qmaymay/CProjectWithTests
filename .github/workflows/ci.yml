@@ -89,16 +89,34 @@ jobs:
       - name: Build (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          echo "=== Linux 构建 ==="
+          echo "=== 详细 Linux 构建调试 ==="
+
+          # 进入目录
           cd calculator
+
+          echo "=== 清理构建目录 ==="
+          rm -rf build
           mkdir -p build
           cd build
-          cmake ..
-          make
 
-          echo "=== 验证库文件生成 ==="
-          find . -name "*.so" -o -name "*.a"
-          ls -la *.so 2>/dev/null || echo "没有.so文件"
+          echo "=== 运行 CMake（详细模式）==="
+          cmake .. -DCMAKE_VERBOSE_MAKEFILE=ON
+
+          echo "=== 查看 CMake 生成的配置 ==="
+          grep -i "shared\|library\|output" CMakeCache.txt | head -20
+
+          echo "=== 运行 Make（详细模式）==="
+          make VERBOSE=1
+
+          echo "=== 详细检查生成的文件 ==="
+          pwd
+          echo "=== 所有文件 ==="
+          find . -type f | sort
+          echo "=== 查看 Makefile 目标 ==="
+          grep -i "calculator" Makefile | head -10
+
+          echo "=== 尝试手动构建共享库 ==="
+          gcc -shared -fPIC -o libcalculator.so ../calculator.c ../error_handling.c -lm || echo "手动构建失败"
 
 
       - name: Run Tests

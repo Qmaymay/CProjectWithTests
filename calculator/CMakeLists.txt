@@ -13,27 +13,22 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
 # 创建共享库
 add_library(calculator SHARED calculator.c
-        version.h
         error_handling.c
-        error_handling.h
+
 )
 
-# 设置输出属性（确保生成 .so 文件）
-set_target_properties(calculator PROPERTIES
-        OUTPUT_NAME "calculator"
-        PREFIX ""
-)
+
 
 # 在这里添加 Windows 特定的 DLL 设置
-if(WIN32)
-    set_target_properties(calculator PROPERTIES
-            SUFFIX ".dll"  # Windows 下强制添加 .dll 后缀
-    )
-else()
-    set_target_properties(calculator PROPERTIES
-            SUFFIX ".so"   # Linux 下强制添加 .so 后缀
-    )
-endif()
+#if(WIN32)
+#    set_target_properties(calculator PROPERTIES
+#            SUFFIX ".dll"  # Windows 下强制添加 .dll 后缀
+#    )
+#else()
+#    set_target_properties(calculator PROPERTIES
+#            SUFFIX ".so"   # Linux 下强制添加 .so 后缀
+#    )
+#endif()
 
 # 设置包含目录: 它解决了C/C++项目中的一个基本问题：头文件查找。
 target_include_directories(calculator
@@ -54,8 +49,13 @@ target_link_libraries(calculator_app calculator)
 
 # 在 target_link_libraries 之后添加——避免属性被覆盖
 # 在github的虚拟机的所有平台（包括windows和Linux）里去掉lib前缀，统一命名为calculator
-set_target_properties(calculator PROPERTIES OUTPUT_NAME "calculator" PREFIX "")
-
+#set_target_properties(calculator PROPERTIES OUTPUT_NAME "calculator" PREFIX "")
+# 设置输出属性（确保生成 .so 文件）
+set_target_properties(calculator PROPERTIES
+        OUTPUT_NAME "calculator"
+        PREFIX ""
+        SUFFIX ".so"
+)
 # 针对MSVC的设置
 if(MSVC)
     # 确保同时生成导入库

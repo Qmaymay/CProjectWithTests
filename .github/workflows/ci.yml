@@ -38,25 +38,25 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: cmd
         run: |
-          echo "=== Windows 构建 ==="
-
-          @REM 清理旧的构建目录
+          echo "=== Windows 构建（仅库）==="
           if exist build rmdir /s /q build
           if exist lib rmdir /s /q lib
 
           mkdir build
           cd build
           cmake ..
-          cmake --build . --config Release
+
+          # 只构建库，不构建可执行文件
+          cmake --build . --config Release --target calc
+
           cd ..
 
-          echo "=== 处理构建产物 ==="
+          # 复制DLL文件
           mkdir lib
-
-          @REM 从多个可能的位置复制DLL
-          copy build\calculator\Release\*.dll lib\ 2>nul || echo "尝试位置1: 无DLL"
-          copy build\Release\*.dll lib\ 2>nul || echo "尝试位置2: 无DLL"
-          copy build\*\Release\*.dll lib\ 2>nul || echo "尝试位置3: 无DLL"
+          if exist lib\Release\calculator.dll (
+              copy lib\Release\calculator.dll lib\
+              echo "✅ 成功复制 calculator.dll"
+          )
 
       - name: Build Project (Linux)
         if: matrix.os == 'ubuntu-latest'

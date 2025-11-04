@@ -142,7 +142,6 @@ void test_validation_functions(void) {
 
 int main(void) {
     printf("º∆À„∆˜≤‚ ‘≥Ã–Ú\n");
-//    printf("∞Ê±æ: %s\n\n", get_version());
 
     test_basic_operations();
     test_advanced_operations();

@@ -103,7 +103,7 @@ jobs:
       - name: Run Tests
         run: |
           cd calculator_tests
-          python test_interfaces.pyg
+          python test_interfaces.py
 
       # 第5步：运行测试
       - name: Run Python interface tests

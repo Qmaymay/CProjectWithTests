@@ -22,8 +22,18 @@ add_library(calculator SHARED calculator.c
 set_target_properties(calculator PROPERTIES
         OUTPUT_NAME "calculator"
         PREFIX ""
-        SUFFIX ""
 )
+
+# 在这里添加 Windows 特定的 DLL 设置
+if(WIN32)
+    set_target_properties(calculator PROPERTIES
+            SUFFIX ".dll"  # Windows 下强制添加 .dll 后缀
+    )
+else()
+    set_target_properties(calculator PROPERTIES
+            SUFFIX ".so"   # Linux 下强制添加 .so 后缀
+    )
+endif()
 
 # 设置包含目录: 它解决了C/C++项目中的一个基本问题：头文件查找。
 target_include_directories(calculator

@@ -21,38 +21,65 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_library(calc SHARED ${CALC_SOURCES})
 
 # 设置库输出属性
-# 设置库输出属性 - 去掉 "lib" 前缀
 set_target_properties(calc PROPERTIES
-        OUTPUT_NAME "calculator"           # 这很重要！
-        PREFIX ""                          # 去掉 "lib" 前缀
+        OUTPUT_NAME "calculator"
+        PREFIX ""
         LIBRARY_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_DIRECTORY}
         RUNTIME_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_DIRECTORY}
 )
+
 # Windows 特定设置
 if(WIN32)
     target_compile_definitions(calc PRIVATE CALC_EXPORTS)
+
+    # 对于MSVC，同时创建静态库
+    if(MSVC)
+        add_library(calc_static STATIC ${CALC_SOURCES})
+        set_target_properties(calc_static PROPERTIES
+                OUTPUT_NAME "calculator"
+                ARCHIVE_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_DIRECTORY}
+        )
+    endif()
 endif()
 
 # 链接数学库
 find_library(MATH_LIB m)
 if(MATH_LIB)
     target_link_libraries(calc ${MATH_LIB})
+    if(MSVC)
+        target_link_libraries(calc_static ${MATH_LIB})
+    endif()
 endif()
 
 # 如果有 main.c，创建可执行文件
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/main.c")
     add_executable(calculator_app main.c)
-    target_link_libraries(calculator_app calc)
+
+    # 根据编译器选择链接的库
+    if(MSVC)
+        target_link_libraries(calculator_app calc_static)
+    else()
+        target_link_libraries(calculator_app calc)
+    endif()
 
     # 设置可执行文件输出
     set_target_properties(calculator_app PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${EXECUTABLE_OUTPUT_DIRECTORY}
     )
 endif()
+if(MSVC)
+    # 为MSVC添加UTF-8支持
+    target_compile_options(calc PRIVATE "/utf-8")
+    if(TARGET calc_static)
+        target_compile_options(calc_static PRIVATE "/utf-8")
+    endif()
+    if(TARGET calculator_app)
+        target_compile_options(calculator_app PRIVATE "/utf-8")
+    endif()
+endif()
 
 message(STATUS "Calculator 配置完成")
 message(STATUS "库文件输出到: ${LIBRARY_OUTPUT_DIRECTORY}")
-
 
 
 #cmake_minimum_required(VERSION 3.10)

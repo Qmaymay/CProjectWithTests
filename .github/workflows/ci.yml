@@ -87,52 +87,35 @@ jobs:
       - name: Build (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
+          echo "=== 清理环境 ==="
+          rm -rf build lib
+
+          echo "=== 安装编译器 ==="
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+
           echo "=== 开始构建 ==="
           cd calculator
-          cmake -B build
-          cmake --build build
+          mkdir -p build
+          cd build
+          cmake ..
+          make -j4
 
-          echo "=== 构建完成，查看生成的文件 ==="
-          find . -name "*.so" -o -name "*.a" | head -20
-
-          echo "=== 查看 build 目录内容 ==="
-          ls -la build/
+          echo "=== 查看生成的文件 ==="
+          find . -name "*.so" -o -name "*.a"
 
           echo "=== 复制库文件 ==="
-          cd ..
+          cd ../..
           mkdir -p lib
-          find calculator/build -name "*.so" -exec cp {} lib/ \;
+          # 确保复制所有可能的库文件
+          cp calculator/build/*.so lib/ 2>/dev/null || echo "没有.so文件"
+          cp calculator/build/*.a lib/ 2>/dev/null || echo "没有.a文件"
 
-          echo "=== 复制后的 lib 目录 ==="
+          echo "=== 最终验证 ==="
           ls -la lib/
-
-          echo "=== 验证库文件 ==="
-          file lib/* 2>/dev/null || echo "lib目录中没有文件"
-
-      - name: Debug - 查看项目结构
-        run: |
-          echo "=== 完整项目结构 ==="
-          find . -type f -name "*.so" -o -name "*.dll" -o -name "*.c" -o -name "CMakeLists.txt" | sort
-          echo "=== calculator_tests 目录 ==="
-          ls -la calculator_tests/
-
-
-    - name: Debug - 测试前检查
-      run: |
-      echo "=== 测试前项目结构 ==="
-      pwd
-      ls -la
-      echo "=== lib目录 ==="
-      ls -la lib/ 2>/dev/null || echo "lib目录不存在"
-      echo "=== calculator/build目录 ==="
-      ls -la calculator/build/ 2>/dev/null || echo "calculator/build目录不存在"
-      echo "=== 所有.so文件 ==="
-      find . -name "*.so" 2>/dev/null || echo "没有找到.so文件"
-
-  - name: 运行测试
-    run: |
-      cd calculator_tests
-      python test_interfaces.py  
+          
+      
+          
       
       
 

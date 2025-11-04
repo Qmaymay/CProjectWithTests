@@ -1,49 +1,87 @@
-name: C Calculator CI
+﻿name: C Calculator CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, develop]
 
 jobs:
   build-and-test:
     name: Build and Test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install build dependencies
+      - name: Install build dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake gcc python3 python3-pip
+          sudo apt-get install -y cmake build-essential
+
+      - name: Install build dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install cmake -y
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Configure CMake
-        run: cmake -B build -S calculator
+      - name: Build Project (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: cmd
+        run: |
+          echo "=== Windows 构建（仅库）==="
+          if exist build rmdir /s /q build
+          if exist lib rmdir /s /q lib
 
-      - name: Build project
-        run: cmake --build build
+          mkdir build
+          cd build
+          cmake ..
 
-      - name: Run Python tests
+          # 只构建库，不构建可执行文件
+          cmake --build . --config Release --target calc
+
+          cd ..
+
+          # 复制DLL文件
+          mkdir lib
+          if exist lib\Release\calculator.dll (
+              copy lib\Release\calculator.dll lib\
+              echo "✅ 成功复制 calculator.dll"
+          )
+
+      - name: Build Project (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "=== Linux 构建 ==="
+
+          # 清理旧的构建目录
+          if [ -d "build" ]; then
+            rm -rf build
+          fi
+          if [ -d "lib" ]; then
+            rm -rf lib
+          fi
+
+          mkdir build && cd build
+          cmake ..
+          cmake --build . --config Release
+          cd ..
+
+          echo "=== 处理构建产物 ==="
+          mkdir -p lib
+          find build -name "*.so" -exec cp {} lib/ \; 2>/dev/null || echo "无SO文件"
+      - name: Run Python interface tests
         run: |
           cd calculator_tests
-          echo "=== 运行接口测试 ==="
-          python test_interfaces.py
-
-      - name: Debug build output
-        run: |
-            echo "=== 构建目录内容 ==="
-            find calculator -name "*.so" -o -name "*.dll" | head -10
-            echo "=== lib目录内容 ==="
-            ls -la lib/ || echo "lib目录不存在"
-
-      - name: Test status
-        run: |
-          echo "🎉 所有测试完成！"
+          python test_interfaces.py --verbose
+        env:
+          PYTHONIOENCODING: utf-8

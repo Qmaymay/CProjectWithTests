@@ -3,35 +3,48 @@
 #include <math.h>
 #include <string.h>
 
-int add(int a, int b) { return a + b; }
+// 简单的函数不需要错误参数
+CALC_API int add(int a, int b) { return a + b; }
 
-int subtract(int a, int b) { return a - b; }
+CALC_API int subtract(int a, int b) { return a - b; }
 
-int multiply(int a, int b) { return a * b; }
+CALC_API int multiply(int a, int b) { return a * b; }
 
-double divide(int a, int b) { 
-    if (b == 0) { 
-        printf("Error: Division by zero!\n"); 
-        return 0; 
+CALC_API double divide(int a, int b, CalcErrorCode* error) {
+    if (error) *error = CALC_SUCCESS;  // 有点想flag的功能
+
+    if (b == 0) {
+        set_error("Division by zero: %d / %d", a, b);
+        if (error) *error = CALC_ERROR_DIVISION_BY_ZERO;
+        return 0.0;
     } 
     return (double)a / b; 
 }
 
-int square(int x) { return x * x; }
+CALC_API int square(int x) { return x * x; }
 
-int cube(int x) {
+CALC_API int cube(int x) {
     return x * x * x;
 }
 
-double sqrt(double x) {
-    if (x < 0) {
-        return -1.0; // 错误处理
-    }
-    if (x == 0.0) {
+// sqrt_calc避免与内置函数sqrt重名
+CALC_API double sqrt_calc(double x, CalcErrorCode* error) {
+    if (error) *error = CALC_SUCCESS;
+
+    // 使用输入验证函数
+    if (!is_valid_number(x)) {
+        set_error("Invalid number for sqrt: %f", x);
+        if (error) *error = CALC_ERROR_INVALID_INPUT;
         return 0.0;
     }
 
-    // 牛顿迭代法
+    if (x < 0) {
+        set_error("Square root of negative number: %f", x);
+        if (error) *error = CALC_ERROR_NEGATIVE_SQRT;
+        return 0.0;
+    }
+
+    // 牛顿迭代法计算平方根
     double result = x;
     for (int i = 0; i < 20; i++) {
         result = 0.5 * (result + x / result);
@@ -52,26 +65,39 @@ double sqrt(double x) {
  * ✅ 完善的错误处理和边界情况
  * ✅ 使用数学库优化性能
  */
-double power(double base, double exponent) {
-    // 特殊情况快速处理
-    if (exponent == 0.0) {
-        return 1.0;  // 任何数的0次方都是1
+CALC_API double power(double base, double exponent, CalcErrorCode* error) {
+    // 1. 初始化错误码为成功
+    if (error) *error = CALC_SUCCESS;
+
+    // 2. 检查输入数字是否有效（不是NaN或无穷大）
+    if (!is_valid_number(base) || !is_valid_number(exponent)) {
+        set_error("无效的输入数字: base=%.2f, exponent=%.2f", base, exponent);
+        if (error) *error = CALC_ERROR_INVALID_INPUT;
+        return 0.0;
     }
 
+    // 3. 任何数的0次方都是1
+    if (exponent == 0.0) {
+        return 1.0;
+    }
+
+    // 4. 处理底数为0的情况
     if (base == 0.0) {
         if (exponent > 0.0) {
             return 0.0;  // 0的正数次方是0
         } else if (exponent < 0.0) {
-            printf("Error: Zero to a negative power is undefined!\n");
-            return 0.0;  // 0的负数次方未定义
+            set_error("0的负数次方未定义: 0^%.2f", exponent);
+            if (error) *error = CALC_ERROR_INVALID_POWER;
+            return 0.0;
         }
     }
 
+    // 5. 1的任何次方都是1
     if (base == 1.0) {
-        return 1.0;  // 1的任何次方都是1
+        return 1.0;
     }
 
-    // 处理负数底数的情况
+    // 6. 处理负数底数的情况
     if (base < 0.0) {
         // 检查指数是否为整数（允许负底数的整数次方）
         double int_part;
@@ -85,27 +111,53 @@ double power(double base, double exponent) {
             return result;
         } else {
             // 负底数的小数次方在实数范围内未定义
-            printf("Error: Negative base with fractional exponent is undefined in real numbers!\n");
+            set_error("负数底数的小数次方在实数范围内未定义: %.2f^%.2f", base, exponent);
+            if (error) *error = CALC_ERROR_INVALID_POWER;
             return 0.0;
         }
     }
 
-    // 一般情况：使用数学库的pow函数（经过优化）
+    // 7. 一般情况：使用数学库的pow函数
     return pow(base, exponent);
 }
-
 // 三角函数计算
-double trig_calc(double input, const char* angle_mode, const char* func) {
-    int is_degrees = (strcmp(angle_mode, "degrees") == 0);
+CALC_API double trig_calc(double input, const char* angle_mode, const char* func,
+                 CalcErrorCode* error) {
+    if (error) *error = CALC_SUCCESS;
 
+    // 使用输入验证函数，代码更简洁
+    if (!is_valid_number(input)) {
+        set_error("Invalid input number: %f", input);
+        if (error) *error = CALC_ERROR_INVALID_INPUT;
+        return 0.0;
+    }
+
+    if (!is_valid_angle_mode(angle_mode)) {
+        set_error("Invalid angle mode: %s", angle_mode ? angle_mode : "NULL");
+        if (error) *error = CALC_ERROR_INVALID_TRIG;
+        return 0.0;
+    }
+
+    if (!is_valid_trig_function(func)) {
+        set_error("Invalid trig function: %s", func ? func : "NULL");
+        if (error) *error = CALC_ERROR_INVALID_TRIG;
+        return 0.0;
+    }
+
+
+    // 三角函数计算逻辑
+    int is_degrees = (strcmp(angle_mode, "degrees") == 0);
     double radians = input;
+
     if (is_degrees) {
         radians = input * 3.141592653589793 / 180.0;
     }
 
+
     if (strcmp(func, "sin") == 0) return sin(radians);
     if (strcmp(func, "cos") == 0) return cos(radians);
     if (strcmp(func, "tan") == 0) return tan(radians);
+
 
     // 修复反三角函数的错误处理
     if (strcmp(func, "asin") == 0) {

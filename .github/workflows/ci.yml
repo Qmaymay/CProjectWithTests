@@ -34,53 +34,51 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Build Project
+      - name: Build Project (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: cmd
         run: |
-          echo "=== 跨平台构建 ==="
+          echo "=== Windows 构建 ==="
+
+          @REM 清理旧的构建目录
+          if exist build rmdir /s /q build
+          if exist lib rmdir /s /q lib
+
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build . --config Release
+          cd ..
+
+          echo "=== 处理构建产物 ==="
+          mkdir lib
+
+          @REM 从多个可能的位置复制DLL
+          copy build\calculator\Release\*.dll lib\ 2>nul || echo "尝试位置1: 无DLL"
+          copy build\Release\*.dll lib\ 2>nul || echo "尝试位置2: 无DLL"
+          copy build\*\Release\*.dll lib\ 2>nul || echo "尝试位置3: 无DLL"
+
+      - name: Build Project (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "=== Linux 构建 ==="
 
           # 清理旧的构建目录
           if [ -d "build" ]; then
             rm -rf build
           fi
+          if [ -d "lib" ]; then
+            rm -rf lib
+          fi
 
-          # 创建构建目录
           mkdir build && cd build
-
-          # 配置项目
           cmake ..
-
-          # 构建项目
           cmake --build . --config Release
-
-          # 回到根目录
           cd ..
 
-          echo "=== 构建产物检查 ==="
-
-          # 检查构建结果
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            # Windows: 检查 Release 目录
-            find build -name "*.dll" -o -name "*.lib" | while read file; do
-              echo "📦 找到: $file"
-            done
-
-            # 复制 DLL 文件到 lib 目录
-            if [ ! -d "lib" ]; then
-              mkdir lib
-            fi
-            copy build\calculator\Release\*.dll lib\ 2>nul || echo "没有DLL文件可复制"
-            copy build\Release\*.dll lib\ 2>nul || echo "没有DLL文件可复制"
-          else
-            # Linux: 检查常规位置
-            find build -name "*.so" | while read file; do
-              echo "📦 找到: $file"
-            done
-
-            # 复制 SO 文件到 lib 目录
-            mkdir -p lib
-            find build -name "*.so" -exec cp {} lib/ \; 2>/dev/null || true
-          fi          
-
+          echo "=== 处理构建产物 ==="
+          mkdir -p lib
+          find build -name "*.so" -exec cp {} lib/ \; 2>/dev/null || echo "无SO文件"
       - name: Run Python interface tests
         run: |
           cd calculator_tests

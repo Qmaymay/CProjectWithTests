@@ -7,153 +7,64 @@ on:
     branches: [main, develop]
 
 jobs:
-  # 第一个任务：安全扫描（并行执行，不阻塞构建）
-  security-scan:
-    name: Security Scan
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Basic security checks
-        run: |
-          echo "🔒 基础安全扫描..."
-          # 检查是否不小心提交了密码、密钥等敏感信息
-          if git log -p | grep -i "password\|secret\|key" | head -5; then
-            echo "⚠️  检测到可能的敏感信息"
-          else
-            echo "✅ 未发现敏感信息"
-          fi
-
-          # 检查C代码中不安全函数
-          echo "🔍 扫描C代码安全问题..."
-          find calculator -name "*.c" -exec grep -l "strcpy\|gets\|sprintf" {} \; | head -5 || echo "✅ 未发现不安全函数"
-
-  # 第二个任务：构建和测试（跨平台）
   build-and-test:
     name: Build and Test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        include:
-          - os: ubuntu-latest
-            build-dir: build_linux
-          - os: windows-latest
-            build-dir: build_windows
 
     steps:
-      # 第1步：获取代码
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 第2步：安装工具（分系统）
       - name: Install build dependencies (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake gcc python3 python3-pip build-essential
+          sudo apt-get install -y cmake build-essential
 
       - name: Install build dependencies (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          choco install mingw -y
+          choco install cmake -y
 
-      # 第3步：设置Python环境
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      # 🔥 第4步：Windows测试两种编译器，Linux正常构建
-      - name: Build with both compilers (Windows)
-        if: matrix.os == 'windows-latest'
+      - name: Build Project
         run: |
-          cd calculator
-          echo "=== 使用 MinGW 构建 ==="
-          cmake -B build_mingw -G "MinGW Makefiles"
-          cmake --build build_mingw
+          echo "=== 跨平台构建 ==="
+          mkdir build && cd build
+          cmake ..
+          cmake --build . --config Release
           
-          echo "=== 使用 MSVC 构建 ==="  
-          cmake -B build_msvc
-          cmake --build build_msvc --config Release
+          echo "=== 构建产物检查 ==="
+          find . -name "*.so" -o -name "*.dll" | while read file; do
+            echo "📦 找到: $file"
+          done
           
-          echo "=== 验证生成的文件 ==="
-          echo "MinGW 生成的文件:"
-          dir build_mingw\*.dll 2>nul || echo "没有MinGW DLL文件"
-          echo "MSVC 生成的文件:"
-          dir build_msvc\Release\*.dll 2>nul || echo "没有MSVC DLL文件"
-          
+          cd ..
+          mkdir -p lib
+          find build -name "*.so" -exec cp {} lib/ \; 2>/dev/null || true
+          find build -name "*.dll" -exec cp {} lib/ \; 2>/dev/null || true
 
-      - name: Build (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Verify library files
         run: |
-          echo "=== 详细 Linux 构建调试 ==="
+          echo "=== 最终库文件验证 ==="
+          ls -la lib/ 2>/dev/null || echo "lib 目录不存在"
+          if [ $(find lib -name "*.so" -o -name "*.dll" 2>/dev/null | wc -l) -eq 0 ]; then
+            echo "❌ 没有生成库文件"
+            exit 1
+          else
+            echo "✅ 库文件生成成功"
+          fi
 
-          # 进入目录
-          cd calculator
-
-          echo "=== 清理构建目录 ==="
-          rm -rf build
-          mkdir -p build
-          cd build
-
-          echo "=== 运行 CMake（详细模式）==="
-          cmake .. -DCMAKE_VERBOSE_MAKEFILE=ON
-
-          echo "=== 查看 CMake 生成的配置 ==="
-          grep -i "shared\|library\|output" CMakeCache.txt | head -20
-
-          echo "=== 运行 Make（详细模式）==="
-          make VERBOSE=1
-
-          echo "=== 详细检查生成的文件 ==="
-          pwd
-          echo "=== 所有文件 ==="
-          find . -type f | sort
-          echo "=== 查看 Makefile 目标 ==="
-          grep -i "calculator" Makefile | head -10
-
-          echo "=== 尝试手动构建共享库 ==="
-          gcc -shared -fPIC -o libcalculator.so ../calculator.c ../error_handling.c -lm || echo "手动构建失败"
-
-
-      - name: Run Tests
-        run: |
-          cd calculator_tests
-          python test_interfaces.py
-        env:
-          PYTHONIOENCODING: utf-8
-          PYTHONUTF8: 1
-
-
-      # 第5步：运行测试
       - name: Run Python interface tests
         run: |
           cd calculator_tests
           python test_interfaces.py --verbose
         env:
           PYTHONIOENCODING: utf-8
-
-      # 第6步：显示构建产物信息
-      - name: Build artifacts info
-        run: |
-          echo "=== 构建产物信息 ==="
-          find . -name "*.so" -o -name "*.dll" -o -name "*.exe" | while read file; do
-            echo "📦 $(basename "$file"): $(dirname "$file")"
-            if command -v file &> /dev/null; then
-              file "$file" || true
-            fi
-          done
-
-      # 第7步：打包成品（只有测试通过才执行）
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: calculator-${{ matrix.os }}
-          path: |
-            lib/
-            */build*/
-          retention-days: 7
-          

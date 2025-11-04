@@ -87,37 +87,21 @@ jobs:
       - name: Build (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          echo "=== 清理环境 ==="
-          rm -rf build lib
-
-          echo "=== 安装编译器 ==="
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake
-
-          echo "=== 开始构建 ==="
+          echo "=== Linux 构建 ==="
           cd calculator
           mkdir -p build
           cd build
           cmake ..
-          make -j4
+          make
 
-          echo "=== 查看生成的文件 ==="
+          echo "=== 验证库文件生成 ==="
           find . -name "*.so" -o -name "*.a"
+          ls -la *.so 2>/dev/null || echo "没有.so文件"
 
-          echo "=== 复制库文件 ==="
-          cd ../..
-          mkdir -p lib
-          # 确保复制所有可能的库文件
-          cp calculator/build/*.so lib/ 2>/dev/null || echo "没有.so文件"
-          cp calculator/build/*.a lib/ 2>/dev/null || echo "没有.a文件"
-
-          echo "=== 最终验证 ==="
-          ls -la lib/
-          
-      
-          
-      
-      
+      - name: Run Tests
+        run: |
+          cd calculator_tests
+          python test_interfaces.pyg
 
       # 第5步：运行测试
       - name: Run Python interface tests

@@ -12,72 +12,36 @@ import sys
 
 def load_calculator_lib():
     """智能加载库 - 支持所有平台"""
-    # 强制刷新输出缓冲区
-    sys.stdout.flush()
-    sys.stderr.flush()
-
-    lib_dir = os.path.join(os.path.dirname(__file__), '../lib')
-
-    # 扩展搜索范围
-    if sys.platform == 'win32':
-        possible_names = ['calculator.dll', 'libcalculator.dll']
-    else:
-        possible_names = ['calculator.so', 'libcalculator.so', 'libcalculator.a', 'calculator.a']
-
-    # 强制输出调试信息
     print("=== lib_loader.py 调试信息 ===", flush=True)
     print(f"平台: {sys.platform}", flush=True)
-    print(f"Python版本: {sys.version}", flush=True)
-    print(f"当前工作目录: {os.getcwd()}", flush=True)
-    print(f"脚本位置: {__file__}", flush=True)
-    print(f"搜索库目录: {lib_dir}", flush=True)
-    print(f"尝试的文件名: {possible_names}", flush=True)
 
-    # 检查目录是否存在
-    if os.path.exists(lib_dir):
-        print(f"✅ 库目录存在", flush=True)
-        try:
-            contents = os.listdir(lib_dir)
-            print(f"📂 目录内容: {contents}", flush=True)
-        except Exception as e:
-            print(f"❌ 无法读取目录: {e}", flush=True)
+    # 根据平台确定库文件位置和名称
+    if sys.platform == 'win32':
+        # Windows: 使用 lib 目录中的 calculator.dll
+        lib_path = os.path.join(os.path.dirname(__file__), '../lib/calculator.dll')
+        possible_paths = [lib_path]
     else:
-        print(f"❌ 库目录不存在: {lib_dir}", flush=True)
+        # Linux: 直接使用构建目录中的库文件
+        build_path = os.path.join(os.path.dirname(__file__), '../calculator/build/libcalculator.so')
+        possible_paths = [
+            build_path,  # 直接使用构建目录
+            os.path.join(os.path.dirname(__file__), '../lib/libcalculator.so'),
+            os.path.join(os.path.dirname(__file__), '../lib/calculator.so')
+        ]
 
-    # 尝试在更多位置查找
-    search_paths = [
-        '../lib',
-        './lib',
-        'lib',
-        '../../lib',
-        '../calculator/build',
-        './calculator/build',
-        '../../calculator/build'
-    ]
+    print(f"尝试的路径: {possible_paths}", flush=True)
 
-    for search_path in search_paths:
-        full_path = os.path.join(os.path.dirname(__file__), search_path)
-        if os.path.exists(full_path):
-            print(f"🔍 搜索路径: {full_path}", flush=True)
-            try:
-                contents = os.listdir(full_path)
-                print(f"  内容: {contents}", flush=True)
-            except:
-                pass
-            for name in possible_names:
-                path = os.path.join(full_path, name)
-                if os.path.exists(path):
-                    print(f"🎯 找到库文件: {path}", flush=True)
-                    return ctypes.CDLL(path)
+    for path in possible_paths:
+        if os.path.exists(path):
+            print(f"✅ 找到库文件: {path}", flush=True)
+            return ctypes.CDLL(path)
 
-    print("❌ 所有搜索路径都找不到库文件", flush=True)
-    raise FileNotFoundError(f"找不到库文件，尝试了: {possible_names}")
+    print("❌ 所有路径都找不到库文件", flush=True)
+    raise FileNotFoundError(f"找不到库文件")
 
 
-# 加载库
-print("=== 开始加载库 ===", flush=True)
 calc_lib = load_calculator_lib()
-print(f"=== 库加载成功: {calc_lib} ===", flush=True)
+print(f"calc_lib: {calc_lib}")
 
 calc_lib = load_calculator_lib()
 print(f"calc_lib: {calc_lib}")

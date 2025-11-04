@@ -15,18 +15,23 @@ def load_calculator_lib():
     print("=== lib_loader.py 调试信息 ===", flush=True)
     print(f"平台: {sys.platform}", flush=True)
 
-    # 根据平台确定库文件位置和名称
     if sys.platform == 'win32':
-        # Windows: 使用 lib 目录中的 calculator.dll
-        lib_path = os.path.join(os.path.dirname(__file__), '../lib/calculator.dll')
-        possible_paths = [lib_path]
-    else:
-        # Linux: 直接使用构建目录中的库文件
-        build_path = os.path.join(os.path.dirname(__file__), '../calculator/build/libcalculator.so')
+        # Windows: 直接使用构建目录中的文件
         possible_paths = [
-            build_path,  # 直接使用构建目录
-            os.path.join(os.path.dirname(__file__), '../lib/libcalculator.so'),
-            os.path.join(os.path.dirname(__file__), '../lib/calculator.so')
+            # MinGW 构建的文件
+            os.path.join(os.path.dirname(__file__), '../calculator/build_mingw/calculator.dll'),
+            os.path.join(os.path.dirname(__file__), '../calculator/build_mingw/libcalculator.dll'),
+            # MSVC 构建的文件
+            os.path.join(os.path.dirname(__file__), '../calculator/build_msvc/Release/calculator.dll'),
+            os.path.join(os.path.dirname(__file__), '../calculator/build_msvc/Release/libcalculator.dll'),
+            # 兼容旧路径
+            os.path.join(os.path.dirname(__file__), '../lib/calculator.dll'),
+        ]
+    else:
+        # Linux: 直接使用构建目录中的文件
+        possible_paths = [
+            os.path.join(os.path.dirname(__file__), '../calculator/build/libcalculator.so'),
+            os.path.join(os.path.dirname(__file__), '../calculator/build/calculator.so'),
         ]
 
     print(f"尝试的路径: {possible_paths}", flush=True)
@@ -39,9 +44,6 @@ def load_calculator_lib():
     print("❌ 所有路径都找不到库文件", flush=True)
     raise FileNotFoundError(f"找不到库文件")
 
-
-calc_lib = load_calculator_lib()
-print(f"calc_lib: {calc_lib}")
 
 calc_lib = load_calculator_lib()
 print(f"calc_lib: {calc_lib}")

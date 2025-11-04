@@ -79,10 +79,12 @@ jobs:
           cmake -B build_msvc
           cmake --build build_msvc --config Release
           
-          echo "=== 复制库文件 ==="
-          mkdir ..\lib
-          copy build_mingw\*.dll ..\lib\ 2>nul || echo "MinGW DLL复制失败"
-          copy build_msvc\Release\*.dll ..\lib\ 2>nul || echo "MSVC DLL复制失败"
+          echo "=== 验证生成的文件 ==="
+          echo "MinGW 生成的文件:"
+          dir build_mingw\*.dll 2>nul || echo "没有MinGW DLL文件"
+          echo "MSVC 生成的文件:"
+          dir build_msvc\Release\*.dll 2>nul || echo "没有MSVC DLL文件"
+          
 
       - name: Build (Linux)
         if: matrix.os == 'ubuntu-latest'

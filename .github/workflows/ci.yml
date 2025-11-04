@@ -117,6 +117,10 @@ jobs:
         run: |
           cd calculator_tests
           python test_interfaces.py
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: 1
+
 
       # 第5步：运行测试
       - name: Run Python interface tests

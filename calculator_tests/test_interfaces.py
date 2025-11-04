@@ -1,63 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-# TODO CMakeLists.txt告诉编译器如何把calculator.c变成libcalculator.dll，
-#  test_interfaces.py直接使用这个成果
-#  lib是仓库，test_interfaces.py是取货人
-
 """
 PowerShell
-
 cd calculator_tests
 .\test_Interface.py  234567891  23654987
 """
-
+# import io
 import ctypes   # 让Python能调用C语言的桥梁
-import os
-import io
 import sys
 
 from test_version import get_test_version
+from lib_loader import calc_lib
 
 # 设置标准输出编码为 UTF-8
-if sys.stdout.encoding != 'UTF-8':
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-if sys.stderr.encoding != 'UTF-8':
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
-
-# 根据平台选择库文件
-if sys.platform == "win32":
-    lib_name = "libcalculator.dll"
-else:
-    lib_name = "libcalculator.so"
-
-# 拼出库文件的完整路径
-"""
-__file__：当前文件位置
-../lib：上级目录的lib文件夹
-最终路径如：E:/.../calculator_tests/../lib/libcalculator.dll
-"""
-lib_path = os.path.join(os.path.dirname(__file__), '../lib', lib_name)
-print(f"加载库：{lib_path}")
-
-
-# 尝试加载C库，失败就退出
-try:
-    lib = ctypes.CDLL(lib_path)
-    print("✅ 库加载成功")
-except Exception as e:
-    print(f"❌ 库加载失败: {e}")
-
-    # 在 Windows 上，尝试直接加载 DLL（不使用路径）
-    if sys.platform == "win32":
-        try:
-            lib = ctypes.CDLL("./libcalculator.dll")
-            print("✅ 库加载成功（直接加载）")
-        except Exception as e2:
-            print(f"❌ 直接加载也失败: {e2}")
-            sys.exit(1)
-    else:
-        sys.exit(1)
+# if sys.stdout.encoding != 'UTF-8':
+#     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+# if sys.stderr.encoding != 'UTF-8':
+#     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 # 定义函数原型
 """
@@ -65,33 +24,33 @@ argtypes：函数参数类型（两个整数）
 restype：返回值类型（整数）
 """
 # 告诉Python："add函数需要两个整数参数"
-lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
+calc_lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
 # 告诉Python："add函数会返回一个整数"
-lib.add.restype = ctypes.c_int
+calc_lib.add.restype = ctypes.c_int
 
-lib.subtract.argtypes = [ctypes.c_int, ctypes.c_int]
-lib.subtract.restype = ctypes.c_int
+calc_lib.subtract.argtypes = [ctypes.c_int, ctypes.c_int]
+calc_lib.subtract.restype = ctypes.c_int
 
-lib.multiply.argtypes = [ctypes.c_int, ctypes.c_int]
-lib.multiply.restype = ctypes.c_int
+calc_lib.multiply.argtypes = [ctypes.c_int, ctypes.c_int]
+calc_lib.multiply.restype = ctypes.c_int
 
-lib.divide.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-lib.divide.restype = ctypes.c_double
+calc_lib.divide.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+calc_lib.divide.restype = ctypes.c_double
 
-lib.square.argtypes = [ctypes.c_int]
-lib.square.restype = ctypes.c_int
+calc_lib.square.argtypes = [ctypes.c_int]
+calc_lib.square.restype = ctypes.c_int
 
-lib.cube.argtypes = [ctypes.c_int]
-lib.cube.restype = ctypes.c_int
+calc_lib.cube.argtypes = [ctypes.c_int]
+calc_lib.cube.restype = ctypes.c_int
 
-lib.sqrt_calc.argtypes = [ctypes.c_double, ctypes.POINTER(ctypes.c_int)]
-lib.sqrt_calc.restype = ctypes.c_double
+calc_lib.sqrt_calc.argtypes = [ctypes.c_double, ctypes.POINTER(ctypes.c_int)]
+calc_lib.sqrt_calc.restype = ctypes.c_double
 
 
 def test_add():
     """测试加法接口"""
     print("🧪 测试加法接口...")
-    result = lib.add(10, 5)
+    result = calc_lib.add(10, 5)
     assert result == 15, f"加法测试失败: 10 + 5 = {result}, 期望 15"
     print("✅ 加法接口测试通过：10 + 5 = 15")
 
@@ -99,7 +58,7 @@ def test_add():
 def test_subtract():
     """测试减法接口"""
     print("🧪 测试减法接口...")
-    result = lib.subtract(10, 5)
+    result = calc_lib.subtract(10, 5)
     assert result == 5, f"减法测试失败: 10 - 5 = {result}, 期望 5"
     print("✅ 减法接口测试通过：10 - 5 = 5")
 
@@ -107,7 +66,7 @@ def test_subtract():
 def test_multiply():
     """测试乘法接口"""
     print("🧪 测试乘法接口...")
-    result = lib.multiply(10, 5)
+    result = calc_lib.multiply(10, 5)
     assert result == 50, f"乘法测试失败: 10 * 5 = {result}, 期望 50"
     print("✅ 乘法接口测试通过：10 * 5 = 50")
 
@@ -117,27 +76,27 @@ def test_divide():
     print("🧪 测试除法接口...")
 
     error = ctypes.c_int(0)
-    result = lib.divide(10, 5, ctypes.byref(error))
+    result = calc_lib.divide(10, 5, ctypes.byref(error))
 
     assert result == 2.0, f"除法测试失败: 10 / 5 = {result}, 期望 2.0"
     assert error.value == 0, f"错误码非零: {error.value}"
     print("✅ 除法接口测试通过：10 / 5 = 2.0")
 
     # 测试除零错误
-    result2 = lib.divide(10, 0, ctypes.byref(error))
-    assert error.value != 0, "除零应该设置错误码"
+    result2 = calc_lib.divide(10, 0, ctypes.byref(error))
+    assert error.value != 0, f"除零应该设置错误码: {result2}"
     print("✅ 除法错误处理测试通过")
 
 
 def test_square():
     """测试平方接口"""
     print("🧪 测试平方接口...")
-    result = lib.square(5)
+    result = calc_lib.square(5)
     assert result == 25, f"平方测试失败: 5² = {result}, 期望 25"
     print("✅ 平方接口测试通过：5² = 25")
 
     # 测试另一个值
-    result2 = lib.square(3)
+    result2 = calc_lib.square(3)
     assert result2 == 9, f"平方测试失败: 3² = {result2}, 期望 9"
     print("✅ 平方接口测试通过：3² = 9")
 
@@ -146,11 +105,11 @@ def test_square():
 def test_cube():
     """测试立方接口"""
     print("🧪 测试立方接口...")
-    result = lib.cube(3)
+    result = calc_lib.cube(3)
     assert result == 27, f"立方测试失败: 3³ = {result}, 期望 27"
     print("✅ 立方接口测试通过：3³ = 27")
 
-    result2 = lib.cube(4)
+    result2 = calc_lib.cube(4)
     assert result2 == 64, f"立方测试失败: 4³ = {result2}, 期望 64"
     print("✅ 立方接口测试通过：4³ = 64")
 
@@ -162,20 +121,20 @@ def test_sqrt():
     error = ctypes.c_int(0)
 
     # 测试正常情况
-    result = lib.sqrt_calc(9.0, ctypes.byref(error))
+    result = calc_lib.sqrt_calc(9.0, ctypes.byref(error))
     assert abs(result - 3.0) < 0.0001, f"平方根测试失败: √9 = {result}, 期望 3.0"
     assert error.value == 0, f"错误码非零: {error.value}"
     print("✅ 平方根接口测试通过：√9 = 3.0")
 
-    result2 = lib.sqrt_calc(2.0, ctypes.byref(error))
+    result2 = calc_lib.sqrt_calc(2.0, ctypes.byref(error))
     expected = 1.4142
     assert abs(result2 - expected) < 0.0001, f"平方根测试失败: √2 = {result2}, 期望 {expected}"
     assert error.value == 0, f"错误码非零: {error.value}"
     print("✅ 平方根接口测试通过：√2 ≈ 1.4142")
 
     # 测试负数
-    result3 = lib.sqrt_calc(-1.0, ctypes.byref(error))
-    assert error.value != 0, "负数平方根应该设置错误码"
+    result3 = calc_lib.sqrt_calc(-1.0, ctypes.byref(error))
+    assert error.value != 0, f"负数平方根应该设置错误码: {result3}"
     print("✅ 平方根接口测试通过：√(-1) = -1.0 (错误处理)")
 
 
@@ -185,8 +144,8 @@ def test_power():
 
     error = ctypes.c_int(0)
 
-    lib.power.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.POINTER(ctypes.c_int)]
-    lib.power.restype = ctypes.c_double
+    calc_lib.power.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.POINTER(ctypes.c_int)]
+    calc_lib.power.restype = ctypes.c_double
 
     # 测试用例
     test_cases = [
@@ -204,7 +163,7 @@ def test_power():
     all_passed = True
     for base, exp, expected, description in test_cases:
         error.value = 0  # 重置错误码
-        result = lib.power(base, exp, ctypes.byref(error))
+        result = calc_lib.power(base, exp, ctypes.byref(error))
 
         # 浮点数比较使用容差
         if abs(result - expected) < 0.0001 and error.value == 0:
@@ -220,7 +179,7 @@ def test_power():
     ]
 
     for base, exp, description in error_cases:
-        result = lib.power(base, exp, ctypes.byref(error))
+        result = calc_lib.power(base, exp, ctypes.byref(error))
         print(f"  🔶 错误处理测试 {description}: 结果 = {result}")
 
     if all_passed:
@@ -238,8 +197,8 @@ def test_trig_functions():
     error = ctypes.c_int(0)
 
     # 定义三角函数函数原型
-    lib.trig_calc.argtypes = [ctypes.c_double, ctypes.c_char_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
-    lib.trig_calc.restype = ctypes.c_double
+    calc_lib.trig_calc.argtypes = [ctypes.c_double, ctypes.c_char_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
+    calc_lib.trig_calc.restype = ctypes.c_double
 
     # 测试用例：角度制三角函数
     angle_test_cases = [
@@ -284,36 +243,36 @@ def test_trig_functions():
     print("  📐 角度制三角函数:")
     for angle, func, expected, desc in angle_test_cases:
         error.value = 0  # 重置错误码
-        result = lib.trig_calc(angle, b"degrees", func.encode(), ctypes.byref(error))
+        result = calc_lib.trig_calc(angle, b"degrees", func.encode(), ctypes.byref(error))
         if abs(result - expected) < 0.0001:
-            print(f"    ✅ {desc}: {result:.6f}")
+            print(f"    ✅ {desc}: {result: .6f}")
             passed_tests += 1
         else:
-            print(f"    ❌ {desc}: {result:.6f}, 期望 {expected:.6f}")
+            print(f"    ❌ {desc}: {result: .6f}, 期望 {expected: .6f}")
             all_passed = False
 
     # 测试弧度制三角函数
     print("  📏 弧度制三角函数:")
     for radian, func, expected, desc in radian_test_cases:
         error.value = 0  # 重置错误码
-        result = lib.trig_calc(radian, b"radians", func.encode(), ctypes.byref(error))
+        result = calc_lib.trig_calc(radian, b"radians", func.encode(), ctypes.byref(error))
         if abs(result - expected) < 0.0001:
-            print(f"    ✅ {desc}: {result:.6f}")
+            print(f"    ✅ {desc}: {result: .6f}")
             passed_tests += 1
         else:
-            print(f"    ❌ {desc}: {result:.6f}, 期望 {expected:.6f}")
+            print(f"    ❌ {desc}: {result: .6f}, 期望 {expected: .6f}")
             all_passed = False
 
     # 测试反三角函数
     print("  🔄 反三角函数:")
     for value, func, expected, desc in arc_test_cases:
         error.value = 0  # 重置错误码
-        result = lib.trig_calc(value, b"degrees", func.encode(), ctypes.byref(error))
+        result = calc_lib.trig_calc(value, b"degrees", func.encode(), ctypes.byref(error))
         if abs(result - expected) < 0.1:  # 反三角函数精度要求放宽
-            print(f"    ✅ {desc}: {result:.2f}°")
+            print(f"    ✅ {desc}: {result: .2f}°")
             passed_tests += 1
         else:
-            print(f"    ❌ {desc}: {result:.2f}°, 期望 {expected:.2f}°")
+            print(f"    ❌ {desc}: {result: .2f}°, 期望 {expected: .2f}°")
             all_passed = False
 
     # 测试转换函数
@@ -321,12 +280,12 @@ def test_trig_functions():
     for value, func, expected, desc in conversion_test_cases:
         error.value = 0  # 重置错误码
         mode = b"degrees" if func == "to_radians" else b"radians"
-        result = lib.trig_calc(value, mode, func.encode(), ctypes.byref(error))
+        result = calc_lib.trig_calc(value, mode, func.encode(), ctypes.byref(error))
         if abs(result - expected) < 0.001:
-            print(f"    ✅ {desc}: {result:.6f}")
+            print(f"    ✅ {desc}: {result: .6f}")
             passed_tests += 1
         else:
-            print(f"    ❌ {desc}: {result:.6f}, 期望 {expected:.6f}")
+            print(f"    ❌ {desc}: {result: .6f}, 期望 {expected: .6f}")
             all_passed = False
 
     # 测试边界和错误情况
@@ -341,12 +300,12 @@ def test_trig_functions():
     for value, func, expected, desc in edge_cases:
         error.value = 0  # 重置错误码
         mode = b"degrees"
-        result = lib.trig_calc(value, mode, func.encode(), ctypes.byref(error))
+        result = calc_lib.trig_calc(value, mode, func.encode(), ctypes.byref(error))
         if abs(result - expected) < 0.0001:
-            print(f"    ✅ {desc}: {result:.6f}")
+            print(f"    ✅ {desc}: {result: .6f}")
             passed_tests += 1
         else:
-            print(f"    🔶 {desc}: {result:.6f}, 期望 {expected:.6f}")
+            print(f"    🔶 {desc}: {result: .6f}, 期望 {expected: .6f}")
             # 边界情况不标记为失败，只记录
 
     print(f"  📊 三角函数测试: {passed_tests}/{total_tests} 通过")

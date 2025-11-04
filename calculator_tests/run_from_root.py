@@ -27,9 +27,9 @@ def main():
     print(f"项目根目录: {project_root}")
     print(f"测试脚本: {root_test_script}")
 
-    if not os.path.exists(root_test_script):
-        print("❌ 根目录的测试脚本不存在，正在创建...")
-        create_simple_test_script(project_root)
+    # 总是重新创建测试脚本，确保使用最新版本
+    print("🔄 确保使用最新测试脚本...")
+    create_simple_test_script(project_root)  # 总是重新创建
 
     # 调用根目录的测试脚本
     print("\n🔧 调用根目录测试脚本...")
@@ -72,7 +72,7 @@ def main():
         return False
 
     # 2. 检查库文件是否存在
-    lib_path = os.path.join("lib", "libcalculator.dll")
+    lib_path = os.path.join("lib", "calculator.dll")
     if os.path.exists(lib_path):
         print(f"✅ 库文件存在: {lib_path}")
     else:

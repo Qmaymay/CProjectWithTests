@@ -21,7 +21,7 @@ def main():
         return False
 
     # 2. 检查库文件是否存在
-    lib_path = os.path.join("lib", "libcalculator.dll")
+    lib_path = os.path.join("lib", "calculator.dll")
     if os.path.exists(lib_path):
         print(f"✅ 库文件存在: {lib_path}")
     else:

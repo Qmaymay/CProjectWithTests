@@ -1,4 +1,4 @@
-name: C Calculator CI
+﻿name: C Calculator CI
 
 on:
   push:
@@ -11,6 +11,7 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,7 +25,7 @@ jobs:
           else
             echo "✅ 未发现敏感信息"
           fi
-          
+
           # 检查C代码中不安全函数
           echo "🔍 扫描C代码安全问题..."
           find calculator -name "*.c" -exec grep -l "strcpy\|gets\|sprintf" {} \; | head -5 || echo "✅ 未发现不安全函数"
@@ -65,44 +66,44 @@ jobs:
         with:
           python-version: '3.10'
 
-      # 第4步：配置CMake
-      - name: Configure CMake
-        run: cmake -B ${{ matrix.build-dir }} -S calculator
-        env:
-          CMAKE_BUILD_TYPE: Release
-
-      # 第5步：编译项目
-      - name: Build project
-        run: cmake --build ${{ matrix.build-dir }} --config Release
-
-      # 第6步：运行测试
-      # 第6步：运行测试（Windows）
-      - name: Run Python interface tests (Windows)
+      # 🔥 第4步：Windows测试两种编译器，Linux正常构建
+      - name: Build with both compilers (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          md ..\lib
-          copy calculator\build_windows\Release\calculator.dll ..\lib\
-          copy calculator\build_windows\Release\calculator_app.exe ..\lib\
+          cd calculator
+          echo "=== 使用 MinGW 构建 ==="
+          cmake -B build_mingw -G "MinGW Makefiles"
+          cmake --build build_mingw
+          
+          echo "=== 使用 MSVC 构建 ==="  
+          cmake -B build_msvc
+          cmake --build build_msvc --config Release
+          
+          echo "=== 复制库文件 ==="
+          mkdir ..\lib
+          copy build_mingw\*.dll ..\lib\ 2>nul || echo "MinGW DLL复制失败"
+          copy build_msvc\Release\*.dll ..\lib\ 2>nul || echo "MSVC DLL复制失败"
 
-          cd calculator_tests
-          python test_interfaces.py --verbose
-        env:
-          PYTHONIOENCODING: utf-8
-
-      # 第6步：运行测试（Linux）
-      - name: Run Python interface tests (Linux)
+      - name: Build (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
+          cd calculator
+          cmake -B ${{ matrix.build-dir }}
+          cmake --build ${{ matrix.build-dir }}
+          
+          echo "=== 复制库文件 ==="
           mkdir -p ../lib
-          cp calculator/build_linux/libcalculator.so ../lib/
-          cp calculator/build_linux/calculator_app ../lib/
+          cp ${{ matrix.build-dir }}/*.so ../lib/ 2>/dev/null || echo "SO复制失败"
 
+      # 第5步：运行测试
+      - name: Run Python interface tests
+        run: |
           cd calculator_tests
           python test_interfaces.py --verbose
         env:
           PYTHONIOENCODING: utf-8
 
-      # 第7步：显示构建产物信息
+      # 第6步：显示构建产物信息
       - name: Build artifacts info
         run: |
           echo "=== 构建产物信息 ==="
@@ -113,12 +114,13 @@ jobs:
             fi
           done
 
-      # 第8步：打包成品（只有测试通过才执行）
+      # 第7步：打包成品（只有测试通过才执行）
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: calculator-${{ matrix.os }}
           path: |
             lib/
-            */build/
+            */build*/
           retention-days: 7
+          

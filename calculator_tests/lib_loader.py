@@ -11,31 +11,33 @@ import sys
 
 
 def load_calculator_lib():
-    """Load library intelligently - support all platforms"""
-    print("=== lib_loader.py Debug Info ===", flush=True)
-    print(f"Platform: {sys.platform}", flush=True)
+    """智能加载库 - 支持所有平台"""
+    print("=== lib_loader.py 调试信息 ===", flush=True)
+    print(f"平台: {sys.platform}", flush=True)
 
+    # 根据平台确定库文件位置和名称
     if sys.platform == 'win32':
-        possible_paths = [
-            os.path.join(os.path.dirname(__file__), '../calculator/build_mingw/calculator.dll'),
-            os.path.join(os.path.dirname(__file__), '../calculator/build_msvc/Release/calculator.dll'),
-            os.path.join(os.path.dirname(__file__), '../lib/calculator.dll'),
-        ]
+        # Windows: 使用 lib 目录中的 calculator.dll
+        lib_path = os.path.join(os.path.dirname(__file__), '../lib/calculator.dll')
+        possible_paths = [lib_path]
     else:
+        # Linux: 直接使用构建目录中的库文件
+        build_path = os.path.join(os.path.dirname(__file__), '../calculator/build/libcalculator.so')
         possible_paths = [
-            os.path.join(os.path.dirname(__file__), '../calculator/build/libcalculator.so'),
-            os.path.join(os.path.dirname(__file__), '../calculator/build/calculator.so'),
+            build_path,  # 直接使用构建目录
+            os.path.join(os.path.dirname(__file__), '../lib/libcalculator.so'),
+            os.path.join(os.path.dirname(__file__), '../lib/calculator.so')
         ]
 
-    print(f"Trying paths: {possible_paths}", flush=True)
+    print(f"尝试的路径: {possible_paths}", flush=True)
 
     for path in possible_paths:
         if os.path.exists(path):
-            print(f"✅ Found library: {path}", flush=True)
+            print(f"✅ 找到库文件: {path}", flush=True)
             return ctypes.CDLL(path)
 
-    print("❌ All paths failed to find library", flush=True)
-    raise FileNotFoundError("Cannot find library file")
+    print("❌ 所有路径都找不到库文件", flush=True)
+    raise FileNotFoundError(f"找不到库文件")
 
 
 calc_lib = load_calculator_lib()

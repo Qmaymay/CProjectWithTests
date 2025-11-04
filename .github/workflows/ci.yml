@@ -88,12 +88,13 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           cd calculator
-          cmake -B ${{ matrix.build-dir }}
-          cmake --build ${{ matrix.build-dir }}
+          cmake -B build
+          cmake --build build
           
-          echo "=== 复制库文件 ==="
-          mkdir -p ../lib
-          cp ${{ matrix.build-dir }}/*.so ../lib/ 2>/dev/null || echo "SO复制失败"
+          cd ..
+          mkdir -p lib
+          find calculator/build -name "*.so" -exec cp {} lib/ \;
+          ls -la lib/
 
       # 第5步：运行测试
       - name: Run Python interface tests

@@ -9,7 +9,10 @@ import os, sys, ctypes
 def load_calculator_lib():
     """智能加载库 - 支持 MSVC 和 MinGW"""
     lib_dir = os.path.join(os.path.dirname(__file__), '../lib')
-    possible_names = ['calculator.dll', 'libcalculator.dll'] if sys.platform == 'win32' else ['libcalculator.so']
+    if sys.platform == 'win32':
+        possible_names = ['calculator.dll']
+    else:
+        possible_names = ['calculator.so', 'libcalculator.so']  # 保持向后兼容
 
     for name in possible_names:
         path = os.path.join(lib_dir, name)

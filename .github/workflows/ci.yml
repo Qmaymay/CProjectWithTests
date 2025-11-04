@@ -37,31 +37,50 @@ jobs:
       - name: Build Project
         run: |
           echo "=== 跨平台构建 ==="
+
+          # 创建构建目录
           mkdir build && cd build
+
+          # 配置项目
           cmake ..
+
+          # 构建项目
           cmake --build . --config Release
-          
-          echo "=== 构建产物检查 ==="
-          find . -name "*.so" -o -name "*.dll" | while read file; do
-            echo "📦 找到: $file"
-          done
-          
+
+          # 回到根目录
           cd ..
+
+          # 创建 lib 目录
           mkdir -p lib
-          find build -name "*.so" -exec cp {} lib/ \; 2>/dev/null || true
-          find build -name "*.dll" -exec cp {} lib/ \; 2>/dev/null || true
+
+          # 简单的文件复制（让CMake处理输出位置）
+          echo "=== 复制库文件 ==="
+
+          # 尝试从不同位置复制库文件
+          cp build/calculator/*.dll lib/ 2>/dev/null || true
+          cp build/calculator/*.so lib/ 2>/dev/null || true
+          cp build/*.dll lib/ 2>/dev/null || true
+          cp build/*.so lib/ 2>/dev/null || true
+          cp build/lib/*.dll lib/ 2>/dev/null || true
+          cp build/lib/*.so lib/ 2>/dev/null || true
 
       - name: Verify library files
         run: |
           echo "=== 最终库文件验证 ==="
-          ls -la lib/ 2>/dev/null || echo "lib 目录不存在"
-          if [ $(find lib -name "*.so" -o -name "*.dll" 2>/dev/null | wc -l) -eq 0 ]; then
-            echo "❌ 没有生成库文件"
-            exit 1
-          else
-            echo "✅ 库文件生成成功"
-          fi
+          echo "lib 目录内容:"
+          ls -la lib/ 2>/dev/null || dir lib 2>/dev/null || echo "lib 目录不存在"
 
+          # 检查是否有库文件
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            if exist lib\*.dll (exit 0) else (exit 1)
+          else
+            if [ -n "$(find lib -name '*.so' -o -name '*.dll' 2>/dev/null)" ]; then
+              echo "✅ 库文件生成成功"
+            else
+              echo "❌ 没有生成库文件"
+              exit 1
+            fi
+          fi
       - name: Run Python interface tests
         run: |
           cd calculator_tests

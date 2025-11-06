@@ -359,7 +359,13 @@ def run_all_tests():
         return True
 
 
+# 在文件末尾添加：
+def run_functional_tests():
+    """运行功能测试 - 供统一测试运行器调用"""
+    return run_all_tests()
+
+
 if __name__ == "__main__":
-    success = run_all_tests()
+    success = run_functional_tests()
     sys.exit(0 if success else 1)
 # 测试Git推送

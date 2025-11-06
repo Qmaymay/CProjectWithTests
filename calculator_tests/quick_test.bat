@@ -9,7 +9,7 @@ call build.bat
 echo.
 echo 2. Running Python tests...
 cd calculator_tests
-python test_interfaces.py
+python main.py
 if %errorlevel% equ 0 (
     echo.
     echo All tests passed! Ready to push to GitHub.

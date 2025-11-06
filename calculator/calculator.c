@@ -44,6 +44,11 @@ CALC_API double sqrt_calc(double x, CalcErrorCode* error) {
         return 0.0;
     }
 
+    // 处理x=0的情况
+    if (x == 0.0) {
+        return 0.0;  // √0 = 0
+    }
+
     // 牛顿迭代法计算平方根
     double result = x;
     for (int i = 0; i < 20; i++) {
@@ -174,3 +179,4 @@ CALC_API double trig_calc(double input, const char* angle_mode, const char* func
 
     return 0.0;
 }
+//

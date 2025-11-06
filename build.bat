@@ -1,5 +1,8 @@
-chcp 65001 > nul
 @echo off
+chcp 65001 > nul
+set PYTHONIOENCODING=utf-8
+set CMakeEncoding=utf-8
+
 setlocal enabledelayedexpansion
 
 echo ========================================

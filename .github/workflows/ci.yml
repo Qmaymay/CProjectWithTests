@@ -8,11 +8,18 @@ on:
 
 jobs:
   build-and-test:
-    name: Build and Test
+    name: Build and Test (${{ matrix.os }} - ${{ matrix.compiler }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+        compiler: [default, mingw]
+        exclude:
+          - os: ubuntu-latest
+            compiler: mingw
+        include:
+          - os: ubuntu-latest
+            compiler: gcc
 
     steps:
       - name: Checkout code
@@ -24,8 +31,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake build-essential
 
-      - name: Install build dependencies (Windows)
-        if: matrix.os == 'windows-latest'
+      - name: Install build dependencies (Windows - MinGW)
+        if: matrix.os == 'windows-latest' && matrix.compiler == 'mingw'
+        run: |
+          choco install mingw cmake -y
+
+      - name: Install build dependencies (Windows - MSVC)
+        if: matrix.os == 'windows-latest' && matrix.compiler == 'default'
         run: |
           choco install cmake -y
 
@@ -34,54 +46,84 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Build Project (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: cmd
+      - name: Build Project
         run: |
-          echo "=== Windows 构建（仅库）==="
-          if exist build rmdir /s /q build
-          if exist lib rmdir /s /q lib
-
-          mkdir build
-          cd build
-          cmake ..
-
-          # 只构建库，不构建可执行文件
-          cmake --build . --config Release --target calc
-
-          cd ..
-
-          # 复制DLL文件
-          mkdir lib
-          if exist lib\Release\calculator.dll (
-              copy lib\Release\calculator.dll lib\
-              echo "✅ 成功复制 calculator.dll"
-          )
-
-      - name: Build Project (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          echo "=== Linux 构建 ==="
-
-          # 清理旧的构建目录
-          if [ -d "build" ]; then
-            rm -rf build
+          echo "=== 构建项目 ==="
+          echo "操作系统: ${{ matrix.os }}"
+          echo "编译器: ${{ matrix.compiler }}"
+          
+          # 清理
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            if exist build rmdir /s /q build
+            if exist lib rmdir /s /q lib
+            mkdir build
+            cd build
+          else
+            rm -rf build lib
+            mkdir build && cd build
           fi
-          if [ -d "lib" ]; then
-            rm -rf lib
+          
+          # 配置
+          if [ "${{ matrix.os }}" == "windows-latest" ] && [ "${{ matrix.compiler }}" == "mingw" ]; then
+            cmake -G "MinGW Makefiles" ..
+            cmake --build . --config Release
+          else
+            cmake ..
+            cmake --build . --config Release
           fi
-
-          mkdir build && cd build
-          cmake ..
-          cmake --build . --config Release
+          
           cd ..
-
-          echo "=== 处理构建产物 ==="
+          
+          # 处理构建产物
           mkdir -p lib
-          find build -name "*.so" -exec cp {} lib/ \; 2>/dev/null || echo "无SO文件"
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            if exist build\Release\*.dll copy build\Release\*.dll lib\ 2>nul || echo "无DLL文件"
+            if exist build\Release\*.exe copy build\Release\*.exe lib\ 2>nul || echo "无可执行文件"
+          else
+            find build -name "*.so" -exec cp {} lib/ \; 2>/dev/null || echo "无SO文件"
+            find build -name "calculator_app" -exec cp {} lib/ \; 2>/dev/null || echo "无可执行文件"
+          fi
+
+      - name: Test Executable
+        run: |
+          echo "=== 测试可执行文件 ==="
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            if exist lib\calculator_app.exe (
+              echo "✅ 找到可执行文件，运行测试..."
+              lib\calculator_app.exe
+              echo "可执行文件测试完成"
+            ) else (
+              echo "❌ 未找到可执行文件"
+            )
+          else
+            if [ -f "lib/calculator_app" ]; then
+              echo "✅ 找到可执行文件，运行测试..."
+              lib/calculator_app
+              echo "可执行文件测试完成"
+            else
+              echo "❌ 未找到可执行文件"
+            fi
+          fi
+
       - name: Run Python interface tests
         run: |
           cd calculator_tests
           python test_interfaces.py --verbose
         env:
           PYTHONIOENCODING: utf-8
+
+      - name: Run Comprehensive Tests
+        run: |
+          cd calculator_tests
+          python main.py --all
+          
+
+      - name: Build Summary
+        run: |
+          echo "=== 构建总结 ==="
+          echo "平台: ${{ matrix.os }}"
+          echo "编译器: ${{ matrix.compiler }}"
+          echo "库文件:"
+          ls -la lib/ || dir lib\
+          echo "======
+          =========="

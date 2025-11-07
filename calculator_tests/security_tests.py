@@ -11,33 +11,34 @@ import os
 # 添加项目根目录到路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lib_loader import calc_lib
+from lib_loader import library_files, get_lib_dir
+from test_interfaces import setup_library_functions
 
 
-def setup_function_prototypes():
-    """设置函数原型"""
-    # 基本运算
-    calc_lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
-    calc_lib.add.restype = ctypes.c_int
+# def setup_function_prototypes(calc_lib):
+#     """设置函数原型"""
+#     # 基本运算
+#     calc_lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
+#     calc_lib.add.restype = ctypes.c_int
+#
+#     calc_lib.subtract.argtypes = [ctypes.c_int, ctypes.c_int]
+#     calc_lib.subtract.restype = ctypes.c_int
+#
+#     calc_lib.multiply.argtypes = [ctypes.c_int, ctypes.c_int]
+#     calc_lib.multiply.restype = ctypes.c_int
+#
+#     calc_lib.divide.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+#     calc_lib.divide.restype = ctypes.c_double
+#
+#     # 高级运算
+#     calc_lib.power.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.POINTER(ctypes.c_int)]
+#     calc_lib.power.restype = ctypes.c_double
+#
+#     calc_lib.sqrt_calc.argtypes = [ctypes.c_double, ctypes.POINTER(ctypes.c_int)]
+#     calc_lib.sqrt_calc.restype = ctypes.c_double
 
-    calc_lib.subtract.argtypes = [ctypes.c_int, ctypes.c_int]
-    calc_lib.subtract.restype = ctypes.c_int
 
-    calc_lib.multiply.argtypes = [ctypes.c_int, ctypes.c_int]
-    calc_lib.multiply.restype = ctypes.c_int
-
-    calc_lib.divide.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-    calc_lib.divide.restype = ctypes.c_double
-
-    # 高级运算
-    calc_lib.power.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.POINTER(ctypes.c_int)]
-    calc_lib.power.restype = ctypes.c_double
-
-    calc_lib.sqrt_calc.argtypes = [ctypes.c_double, ctypes.POINTER(ctypes.c_int)]
-    calc_lib.sqrt_calc.restype = ctypes.c_double
-
-
-def test_arithmetic_overflow():
+def test_arithmetic_overflow(lib):
     """测试算术运算溢出"""
     print("🧪 测试算术运算溢出...")
 
@@ -55,7 +56,7 @@ def test_arithmetic_overflow():
     for a, b, desc in test_cases:
         try:
             # 测试加法 - C语言的整数环绕是正常行为
-            result = calc_lib.add(a, b)
+            result = lib.add(a, b)
             print(f"  ✅ {desc}: {a} + {b} = {result} (C语言正常整数环绕)")
             # 检查是否溢出（结果符号异常）
             # if (a > 0 and b > 0 and result < 0) or (a < 0 and b < 0 and result > 0):
@@ -70,7 +71,7 @@ def test_arithmetic_overflow():
     return all_passed
 
 
-def test_division_edge_cases():
+def test_division_edge_cases(lib):
     """测试除法边界情况"""
     print("🧪 测试除法边界情况...")
 
@@ -78,7 +79,7 @@ def test_division_edge_cases():
     all_passed = True
 
     # 除零测试
-    result = calc_lib.divide(1, 0, ctypes.byref(error))
+    result = lib.divide(1, 0, ctypes.byref(error))
     if error.value != 0:
         print("  ✅ 除零错误正确处理")
     else:
@@ -94,7 +95,7 @@ def test_division_edge_cases():
 
     for a, b, desc in edge_cases:
         error.value = 0
-        result = calc_lib.divide(a, b, ctypes.byref(error))
+        result = lib.divide(a, b, ctypes.byref(error))
         if error.value == 0 and abs(result - (a / b)) < 0.001:
             print(f"  ✅ {desc}: {a}/{b} = {result}")
         else:
@@ -104,7 +105,7 @@ def test_division_edge_cases():
     return all_passed
 
 
-def test_power_edge_cases():
+def test_power_edge_cases(lib):
     """测试幂运算边界情况"""
     print("🧪 测试幂运算边界情况...")
 
@@ -120,7 +121,7 @@ def test_power_edge_cases():
 
     for base, exp, desc, should_fail in edge_cases:
         error.value = 0
-        result = calc_lib.power(base, exp, ctypes.byref(error))
+        result = lib.power(base, exp, ctypes.byref(error))
 
         if should_fail:
             if error.value != 0:
@@ -138,7 +139,7 @@ def test_power_edge_cases():
     return all_passed
 
 
-def test_sqrt_edge_cases():
+def test_sqrt_edge_cases(lib):
     """测试平方根边界情况"""
     print("🧪 测试平方根边界情况...")
 
@@ -154,7 +155,7 @@ def test_sqrt_edge_cases():
 
     for value, desc, should_fail in edge_cases:
         error.value = 0
-        result = calc_lib.sqrt_calc(value, ctypes.byref(error))
+        result = lib.sqrt_calc(value, ctypes.byref(error))
 
         if should_fail:
             if error.value != 0:
@@ -177,7 +178,7 @@ def run_all_security_tests():
     print("🔒 计算器安全测试套件")
     print("=" * 50)
 
-    setup_function_prototypes()
+    # TODO setup_library_functions(get_lib_dir)
 
     tests = [
         test_arithmetic_overflow,

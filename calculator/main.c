@@ -1,9 +1,13 @@
+//
+// Created by Admin on 2025/11/7.
+//
 /*
- * TODO calculator_app 下点绿色三角 运行,
- * CLion 有两种运行模式：CMake 模式：通过 CMakeLists.txt，
- * 正确链接所有依单文件模式：快速测试单个文件，但无法处理复杂依赖
+ * calculator_app 运行说明
+ * CLion 有两种运行模式：
+ * - CMake 模式：通过 CMakeLists.txt，正确链接所有依赖
+ * - 单文件模式：快速测试单个文件，但无法处理复杂依赖
  * 与测试python代码共享动态库时，main.c 下点绿色三角只会编译main.c
- * */
+ */
 
 #include <stdio.h>
 #include "calculator.h"  // 只需要包含这个，会自动包含 error_handling.h
@@ -53,7 +57,6 @@ void test_advanced_operations(void) {
     if (error != CALC_SUCCESS) {
         printf("平方根错误: %s\n", error_code_to_string(error));
     }
-
 }
 
 // 幂运算测试
@@ -84,12 +87,10 @@ void test_power_function(void) {
         printf("检测到错误: %s\n", error_code_to_string(error));
     }
 
-    // 测试4: 无效输入（NaN）
-//    double invalid_num = 0.0 / 0.0;  // 制造 NaN
-//    power_result = power(invalid_num, 2.0, &error);
-    double result = divide(10.0, 0.0, &error);  // 这个应该没问题
+    // 测试4: 无效输入检测
+    double zero = 0.0;
+    double result = divide(10.0, 0.0, &error);
     if (error != CALC_SUCCESS) {
-        (void )result;
         printf("无效输入检测: %s\n", get_last_error());
     }
 }
@@ -109,15 +110,12 @@ void test_trig_functions(void) {
     // 无效角度模式测试
     double invalid_result = trig_calc(30.0, "invalid_mode", "sin", &error);
     if (error != CALC_SUCCESS) {
-        (void)invalid_result;  // 明确表示故意不使用这个变量
         printf("三角函数错误: %s\n", get_last_error());
-
     }
 
     // 无效函数名测试
     invalid_result = trig_calc(30.0, "degrees", "invalid_func", &error);
     if (error != CALC_SUCCESS) {
-        (void)invalid_result;
         printf("函数名错误: %s\n", error_code_to_string(error));
     }
 }
@@ -134,7 +132,6 @@ void test_validation_functions(void) {
            is_valid_trig_function("tan") ? "有效" : "无效");
 
     // 测试无效输入
-//    double invalid_num = 0.0 / 0.0;  // 制造 NaN
     double zero = 0.0;
     double invalid_num = zero / zero;  // 运行时计算，编译时不会检测
     printf("验证 NaN 数字: %s\n", is_valid_number(invalid_num) ? "有效" : "无效");
@@ -142,13 +139,12 @@ void test_validation_functions(void) {
 
 int main(void) {
     printf("计算器测试程序\n");
-
     test_basic_operations();
     test_advanced_operations();
+    test_power_function();
     test_trig_functions();
     test_validation_functions();
 
+    printf("\n所有测试完成！\n");
     return 0;
 }
-
-//

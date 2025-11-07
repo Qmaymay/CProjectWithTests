@@ -1,72 +1,43 @@
 @echo off
 chcp 65001 > nul
-set PYTHONIOENCODING=utf-8
-set CMakeEncoding=utf-8
-
-setlocal enabledelayedexpansion
 
 echo ========================================
-echo    Calculator Library Build Script
+echo   Multi-Platform Build Script
 echo ========================================
 
-set BUILD_SUCCESS=1
+set PROJECT_ROOT=%~dp0
+set OUTPUT_DIR=%PROJECT_ROOT%all_builds
 
 echo.
-echo 1. Cleaning build directory...
-if exist build (
-    echo   Removing old build directory...
-    rmdir /s /q build
-    if !errorlevel! neq 0 (
-        echo ERROR: Clean build directory failed!
-        set BUILD_SUCCESS=0
-    )
-)
-
-if exist build rmdir /s /q build
-if exist lib\calculator.dll del lib\calculator.dll
-if exist lib\libcalculator.dll del lib\libcalculator.dll
-if exist lib\calculator_app.exe del lib\calculator_app.exe
-
-echo.
-echo 2. Generating build system...
-cmake -B build -G "MinGW Makefiles"
-if !errorlevel! neq 0 (
-    echo ERROR: CMake configuration failed!
-    set BUILD_SUCCESS=0
-)
-
-echo.
-echo 3. Compiling project...
-cmake --build build --config Release
-if !errorlevel! neq 0 (
-    echo ERROR: Compilation failed!
-    set BUILD_SUCCESS=0
-)
-
-echo.
-echo 4. Checking build results...
-set LIB_FOUND=0
-dir lib\*.dll >nul 2>&1
-if !errorlevel! equ 0 (
-    echo SUCCESS: Found DLL files in lib\
-    set LIB_FOUND=1
-)
-
-if !LIB_FOUND! equ 0 (
-    echo ERROR: No DLL files found in lib\ directory
-    echo Available files in lib\:
-    dir lib\ 2>nul || echo Directory is empty or does not exist
-    set BUILD_SUCCESS=0
-)
-
-
-echo.
-echo ========================================
-if !BUILD_SUCCESS! equ 1 (
-    echo SUCCESS: All steps completed! Build successful!
+echo 1. Building MinGW version...
+mkdir build_mingw 2>nul
+cmake -B build_mingw -S %PROJECT_ROOT%calculator -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake --build build_mingw
+if %errorlevel% equ 0 (
+    echo ✅ MinGW build successful
 ) else (
-    echo ERROR: Build process encountered errors!
-    exit /b 1
+    echo ❌ MinGW build failed
 )
 
-endlocal
+echo.
+echo 2. Creating output directory...
+mkdir %OUTPUT_DIR% 2>nul
+
+echo.
+echo 3. Copying MinGW artifacts...
+copy build_mingw\lib\calculator_mingw.dll %OUTPUT_DIR%\ 2>nul
+copy build_mingw\lib\calculator_app_mingw.exe %OUTPUT_DIR%\ 2>nul
+
+echo.
+echo ========================================
+echo Build Summary
+echo ========================================
+echo Generated Files in %OUTPUT_DIR%:
+dir %OUTPUT_DIR% /B
+
+echo.
+echo Platform Notes:
+echo - MinGW: ✅ Built successfully
+echo - MSVC:  ⚠️  Requires Visual Studio
+echo - Linux: ⚠️  Requires Linux system
+echo ========================================

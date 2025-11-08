@@ -1,0 +1,31 @@
+name: Character Encoding Fix (Dry Run)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check-encoding:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for encoding issues
+        run: |
+          echo "检查文件编码问题..."
+          # 检查 BOM 标记
+          find . -name "*.c" -o -name "*.h" | while read file; do
+            if head -c3 "$file" | grep -q $'\xEF\xBB\xBF'; then
+              echo "❌ $file 包含 BOM 标记"
+            else
+              echo "✅ $file 编码正常"
+            fi
+          done
+          
+          echo "=== 需要手动修复的文件 ==="
+          find . -name "*.c" -o -name "*.h" | while read file; do
+            if ! iconv -f UTF-8 -t UTF-8 "$file" >/dev/null 2>&1; then
+              echo "❌ $file 存在编码问题"
+            fi
+          done

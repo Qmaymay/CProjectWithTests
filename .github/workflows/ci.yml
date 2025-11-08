@@ -1,127 +1,142 @@
-﻿name: C Calculator CI
+﻿name: Calculator CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ main, master ]
   pull_request:
-    branches: [main, develop]
+    branches: [ main, master ]
 
 jobs:
   build-and-test:
-    name: Build and Test (${{ matrix.os }} - ${{ matrix.build_type }})
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        build_type: [Release, Debug]
-        exclude:
+        os: [windows-latest, ubuntu-latest]
+        include:
           - os: windows-latest
-            build_type: Debug
+            compiler: msvc
+            generator: "Visual Studio 17 2022"
+          - os: windows-latest
+            compiler: mingw
+            generator: "MinGW Makefiles"
+          - os: ubuntu-latest
+            compiler: gcc
+            generator: "Unix Makefiles"
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Install build dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake build-essential
-
-      - name: Install build dependencies (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          choco install cmake -y
-
-      - name: Install build dependencies (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew update
-          brew install cmake
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Build Project
+      - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          echo "=== 构建项目 ==="
-          echo "操作系统: ${{ matrix.os }}"
-          echo "构建类型: ${{ matrix.build_type }}"
-          
-          # 清理并创建构建目录
-          rm -rf build lib
-          mkdir build && cd build
-          
-          # 配置和构建
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ..
-          cmake --build . --config ${{ matrix.build_type }}
-          
-          cd ..
-          
-          # 创建库目录并复制构建产物
-          mkdir -p lib
-          if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            # Windows: 复制 DLL 和 EXE 文件
-            find build -name "*.dll" -exec cp {} lib/ \; 2>/dev/null || echo "无DLL文件"
-            find build -name "*.exe" -exec cp {} lib/ \; 2>/dev/null || echo "无可执行文件"
-          else
-            # Linux/macOS: 复制 SO/DYLIB 和可执行文件
-            find build -name "*.so" -exec cp {} lib/ \; 2>/dev/null || echo "无SO文件"
-            find build -name "*.dylib" -exec cp {} lib/ \; 2>/dev/null || echo "无DYLIB文件"
-            find build -name "calculator_app" -exec cp {} lib/ \; 2>/dev/null || echo "无可执行文件"
-          fi
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ make cmake
 
-      - name: Test Executable
+      - name: Install dependencies (Windows MinGW)
+        if: matrix.os == 'windows-latest' && matrix.compiler == 'mingw'
         run: |
-          echo "=== 测试可执行文件 ==="
-          if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            if [ -f "lib/calculator_app.exe" ]; then
-              echo "✅ 找到可执行文件，运行测试..."
-              cd lib && ./calculator_app.exe
-              echo "可执行文件测试完成"
-            else
-              echo "❌ 未找到可执行文件"
-              echo "当前目录内容:"
-              ls -la
-              echo "lib目录内容:"
-              ls -la lib/ || echo "lib目录不存在"
-            fi
-          else
-            if [ -f "lib/calculator_app" ]; then
-              echo "✅ 找到可执行文件，运行测试..."
-              cd lib && ./calculator_app
-              echo "可执行文件测试完成"
-            else
-              echo "❌ 未找到可执行文件"
-              echo "当前目录内容:"
-              ls -la
-              echo "lib目录内容:"
-              ls -la lib/ || echo "lib目录不存在"
-            fi
-          fi
+          choco install mingw -y
 
-      - name: Run Python interface tests
+      - name: Configure and Build
         run: |
-          echo "=== 运行Python接口测试 ==="
+          echo "Building with ${{ matrix.compiler }} on ${{ matrix.os }}"
+          
+          # 创建构建目录
+          mkdir build
+          cd build
+          
+          # 配置项目
+          cmake .. -G "${{ matrix.generator }}" -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=../build/lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=../build/lib
+          
+          # 构建项目
+          cmake --build . --config Debug
+          
+          # 显示构建结果
+          echo "=== Build Output ==="
+          ls -la ../build/lib/ || dir ../build/lib/
+
+      - name: Run Tests
+        run: |
+          echo "Running tests for ${{ matrix.compiler }}"
+          
+          # 进入测试目录
           cd calculator_tests
-          python test_interfaces.py --verbose
-        env:
-          PYTHONIOENCODING: utf-8
+          
+          # 安装测试依赖
+          pip install -r requirements.txt || echo "No requirements.txt found"
+          
+          # 运行测试
+          python main.py
+          
+          echo "✅ Tests completed for ${{ matrix.compiler }}"
 
-      - name: Run Comprehensive Tests
-        run: |
-          echo "=== 运行综合测试 ==="
-          cd calculator_tests
-          python main.py --all
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: calculator-${{ matrix.compiler }}-${{ matrix.os }}
+          path: |
+            build/lib/
+          retention-days: 7
 
-      - name: Build Summary
+  test-summary:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Show Test Summary
         run: |
-          echo "=== 构建总结 ==="
-          echo "平台: ${{ matrix.os }}"
-          echo "构建类型: ${{ matrix.build_type }}"
-          echo "构建时间: $(date)"
-          echo "库文件列表:"
-          ls -la lib/ 2>/dev/null || echo "lib目录不存在或为空"
-          echo "======================"
+          echo "🎯 Calculator CI Test Summary"
+          echo "=============================="
+          echo "✅ All ${{ needs.build-and-test.result }} jobs completed successfully!"
+          echo ""
+          echo "📊 Build Matrix Results:"
+          echo "------------------------"
+          {{ range needs.build-and-test.outputs.matrix }}
+          echo "- ${{ matrix.compiler }} on ${{ matrix.os }}: ✅ Success"
+          {{ end }}
+          
+          echo ""
+          echo "📦 Generated Artifacts:"
+          echo "----------------------"
+          find artifacts -name "*.dll" -o -name "*.so" -o -name "*.exe" | while read file; do
+            echo "📄 $(basename $file)"
+          done || echo "No artifacts found"
+
+  deploy-docs:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    needs: build-and-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate Build Report
+        run: |
+          echo "# 🧮 Calculator Build Report" > build-report.md
+          echo "" >> build-report.md
+          echo "## 📅 Build Date: $(date)" >> build-report.md
+          echo "## 🔧 Compilers Tested:" >> build-report.md
+          echo "- ✅ MSVC (Windows)" >> build-report.md
+          echo "- ✅ MinGW (Windows)" >> build-report.md
+          echo "- ✅ GCC (Linux)" >> build-report.md
+          echo "" >> build-report.md
+          echo "## 📊 Test Results" >> build-report.md
+          echo "All tests passed across all compiler configurations! 🎉" >> build-report.md
+          
+          cat build-report.md

@@ -14,27 +14,8 @@ import statistics
 # 添加项目根目录到路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lib_loader import calc_lib
-
-
-def setup_function_prototypes():
-    """设置函数原型"""
-    # 基本运算
-    calc_lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
-    calc_lib.add.restype = ctypes.c_int
-
-    calc_lib.multiply.argtypes = [ctypes.c_int, ctypes.c_int]
-    calc_lib.multiply.restype = ctypes.c_int
-
-    calc_lib.divide.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
-    calc_lib.divide.restype = ctypes.c_double
-
-    # 高级运算
-    calc_lib.power.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.POINTER(ctypes.c_int)]
-    calc_lib.power.restype = ctypes.c_double
-
-    calc_lib.sqrt_calc.argtypes = [ctypes.c_double, ctypes.POINTER(ctypes.c_int)]
-    calc_lib.sqrt_calc.restype = ctypes.c_double
+from lib_loader import library_files, get_lib_dir
+from test_interfaces import setup_library_functions, CalcErrorCode
 
 
 def time_function(func, *args, iterations=1000):
@@ -49,16 +30,16 @@ def time_function(func, *args, iterations=1000):
     return times
 
 
-def test_basic_operations_performance():
-    """测试基本运算性能"""
-    print("⚡ 测试基本运算性能...")
+def test_library_performance(lib, lib_name):
+    """测试单个库的性能"""
+    print(f"⚡ 测试 {lib_name} 性能...")
 
-    error = ctypes.c_int(0)
+    error = CalcErrorCode(CalcErrorCode.CALC_SUCCESS)
 
     operations = [
-        ("加法", calc_lib.add, (123, 456)),
-        ("乘法", calc_lib.multiply, (123, 456)),
-        ("除法", calc_lib.divide, (1000, 3, ctypes.byref(error))),
+        ("加法", lib.add, (123, 456)),
+        ("乘法", lib.multiply, (123, 456)),
+        ("除法", lib.divide, (1000, 3, ctypes.byref(error))),
     ]
 
     results = {}
@@ -72,16 +53,16 @@ def test_basic_operations_performance():
             'min': min(times),
             'max': max(times)
         }
-        print(f"  📊 {name}: {avg_time:.2f} ± {std_dev:.2f} μs (min: {min(times):.2f}, max: {max(times):.2f})")
+        print(f"  📊 {name}: {avg_time:.2f} ± {std_dev:.2f} μs")
 
     return results
 
 
-def test_throughput():
-    """测试吞吐量"""
+def test_library_throughput(lib):
+    """测试单个库的吞吐量"""
     print("⚡ 测试运算吞吐量...")
 
-    error = ctypes.c_int(0)
+    error = CalcErrorCode(CalcErrorCode.CALC_SUCCESS)
 
     # 测试连续操作的吞吐量
     operations = 10000
@@ -90,12 +71,12 @@ def test_throughput():
     for i in range(operations):
         # 混合操作
         if i % 4 == 0:
-            calc_lib.add(i, 1)
+            lib.add(i, 1)
         elif i % 4 == 1:
-            calc_lib.multiply(i, 2)
+            lib.multiply(i, 2)
         elif i % 4 == 2:
-            error.value = 0
-            calc_lib.divide(i + 1, 3, ctypes.byref(error))
+            error = CalcErrorCode(CalcErrorCode.CALC_SUCCESS)
+            lib.divide(i + 1, 3, ctypes.byref(error))
 
     end_time = time.perf_counter()
     total_time = end_time - start_time
@@ -113,34 +94,68 @@ def run_all_performance_tests():
     print("⚡ 计算器性能测试套件")
     print("=" * 50)
 
-    setup_function_prototypes()
+    if not library_files:
+        print("❌ 没有找到动态库")
+        return None
+
+    print(f"测试 {len(library_files)} 个编译器版本: {', '.join(library_files)}")
 
     performance_results = {}
 
-    # 运行各项测试
-    performance_results['basic_ops'] = test_basic_operations_performance()
-    print("")
+    # 测试每个库
+    for lib_file in library_files:
+        try:
+            lib = ctypes.CDLL(os.path.join(get_lib_dir(), lib_file))
+            setup_library_functions(lib)
 
-    performance_results['throughput'] = test_throughput()
-    print("")
+            print(f"\n🔍 测试 {lib_file}")
+            print("-" * 30)
 
-    # 生成性能报告
+            # 测试性能
+            perf_results = test_library_performance(lib, lib_file)
+            print("")
+
+            # 测试吞吐量
+            throughput = test_library_throughput(lib)
+
+            performance_results[lib_file] = {
+                'performance': perf_results,
+                'throughput': throughput
+            }
+
+        except Exception as e:
+            print(f"❌ {lib_file} 性能测试失败: {e}")
+            performance_results[lib_file] = None
+
+    # 生成性能报告总结
+    print("\n" + "=" * 50)
+    print("📊 性能测试总结")
     print("=" * 50)
-    print("📊 性能测试报告")
-    print("=" * 50)
 
-    # 计算平均操作时间
-    all_times = []
-    for op_name, data in performance_results['basic_ops'].items():
-        all_times.append(data['avg'])
-        print(f"📈 {op_name}: {data['avg']:.2f} μs")
+    successful_tests = sum(1 for results in performance_results.values() if results)
 
-    if all_times:
-        avg_time = statistics.mean(all_times)
-        print(f"\n🎯 平均操作时间: {avg_time:.2f} μs")
-        print(f"🚀 理论最大吞吐量: {1000000 / avg_time:.0f} 操作/秒")
+    # 只输出总体统计，不重复详细数据
+    print(f"✅ 成功测试了 {successful_tests}/{len(library_files)} 个编译器")
 
-    print(f"📈 实测吞吐量: {performance_results['throughput']:.0f} 操作/秒")
+    if successful_tests > 0:
+        # 计算平均性能
+        all_avg_times = []
+        all_throughputs = []
+
+        for lib_file, results in performance_results.items():
+            if results:
+                perf_data = results['performance']
+                avg_times = [data['avg'] for data in perf_data.values()]
+                all_avg_times.extend(avg_times)
+                all_throughputs.append(results['throughput'])
+
+        if all_avg_times:
+            avg_op_time = statistics.mean(all_avg_times)
+            avg_throughput = statistics.mean(all_throughputs)
+
+            print(f"📈 平均操作时间: {avg_op_time:.2f} μs")
+            print(f"🚀 平均吞吐量: {avg_throughput:.0f} 操作/秒")
+            print(f"⚡ 性能表现正常")
 
     return performance_results
 

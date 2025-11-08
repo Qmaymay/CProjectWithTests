@@ -74,6 +74,7 @@ CALC_API double power(double base, double exponent, CalcErrorCode* error) {
     // 1. 初始化错误码为成功
     if (error) *error = CALC_SUCCESS;
 
+
     // 2. 检查输入数字是否有效（不是NaN或无穷大）
     if (!is_valid_number(base) || !is_valid_number(exponent)) {
         set_error("无效的输入数字: base=%.2f, exponent=%.2f", base, exponent);

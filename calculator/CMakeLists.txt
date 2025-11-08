@@ -2,17 +2,20 @@ cmake_minimum_required(VERSION 3.10)
 project(Calculator LANGUAGES C)
 
 # ==================== 输出目录设置 ====================
-if(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
-    set(BUILD_BASE_DIR ${CMAKE_SOURCE_DIR}/..)
+set(BUILD_BASE_DIR ${CMAKE_BINARY_DIR})
+
+# Simple mode detection
+if(DEFINED ENV{TEST_BUILD})
+    # build.bat test mode: all files in lib directory
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BUILD_BASE_DIR}/lib)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BUILD_BASE_DIR}/lib)
+    message(STATUS "Test mode: all files in lib directory")
 else()
-    set(BUILD_BASE_DIR ${CMAKE_BINARY_DIR})
+    # CLion mode: executable in root directory
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BUILD_BASE_DIR})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BUILD_BASE_DIR}/lib)
+    message(STATUS "CLion mode: executable in build root")
 endif()
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BUILD_BASE_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BUILD_BASE_DIR}/lib)
-
-file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-file(MAKE_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 # ==================== 编译器设置 ====================
 if(MSVC)

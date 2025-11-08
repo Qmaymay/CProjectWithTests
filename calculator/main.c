@@ -1,154 +1,150 @@
+//
+// Created by Admin on 2025/11/7.
+//
 /*
- * TODO calculator_app ÏÂµãÂÌÉ«Èı½Ç ÔËĞĞ,
- * CLion ÓĞÁ½ÖÖÔËĞĞÄ£Ê½£ºCMake Ä£Ê½£ºÍ¨¹ı CMakeLists.txt£¬
- * ÕıÈ·Á´½ÓËùÓĞÒÀµ¥ÎÄ¼şÄ£Ê½£º¿ìËÙ²âÊÔµ¥¸öÎÄ¼ş£¬µ«ÎŞ·¨´¦Àí¸´ÔÓÒÀÀµ
- * Óë²âÊÔpython´úÂë¹²Ïí¶¯Ì¬¿âÊ±£¬main.c ÏÂµãÂÌÉ«Èı½ÇÖ»»á±àÒëmain.c
- * */
+ * calculator_app è¿è¡Œè¯´æ˜
+ * CLion æœ‰ä¸¤ç§è¿è¡Œæ¨¡å¼ï¼š
+ * - CMake æ¨¡å¼ï¼šé€šè¿‡ CMakeLists.txtï¼Œæ­£ç¡®é“¾æ¥æ‰€æœ‰ä¾èµ–
+ * - å•æ–‡ä»¶æ¨¡å¼ï¼šå¿«é€Ÿæµ‹è¯•å•ä¸ªæ–‡ä»¶ï¼Œä½†æ— æ³•å¤„ç†å¤æ‚ä¾èµ–
+ * ä¸æµ‹è¯•pythonä»£ç å…±äº«åŠ¨æ€åº“æ—¶ï¼Œmain.c ä¸‹ç‚¹ç»¿è‰²ä¸‰è§’åªä¼šç¼–è¯‘main.c
+ */
 
 #include <stdio.h>
-#include "calculator.h"  // Ö»ĞèÒª°üº¬Õâ¸ö£¬»á×Ô¶¯°üº¬ error_handling.h
+#include "calculator.h"  // åªéœ€è¦åŒ…å«è¿™ä¸ªï¼Œä¼šè‡ªåŠ¨åŒ…å« error_handling.h
 
-// ²âÊÔ»ù±¾ÔËËã
+// æµ‹è¯•åŸºæœ¬è¿ç®—
 void test_basic_operations(void) {
-    printf("=== »ù±¾ÔËËã²âÊÔ ===\n");
+    printf("=== åŸºæœ¬è¿ç®—æµ‹è¯• ===\n");
 
-    // ²»ĞèÒª´íÎó¼ì²éµÄ¼òµ¥ÔËËã
+    // ä¸éœ€è¦é”™è¯¯æ£€æŸ¥çš„ç®€å•è¿ç®—
     printf("5 + 3 = %d\n", add(5, 3));
     printf("10 - 4 = %d\n", subtract(10, 4));
 
-    // ĞèÒª´íÎó¼ì²éµÄÔËËã
+    // éœ€è¦é”™è¯¯æ£€æŸ¥çš„è¿ç®—
     CalcErrorCode error;
 
-    // Õı³£³ı·¨
+    // æ­£å¸¸é™¤æ³•
     double result = divide(10, 2, &error);
     if (error == CALC_SUCCESS) {
         printf("10 / 2 = %.2f\n", result);
     } else {
-        printf("³ı·¨´íÎó: %s\n", get_last_error());
+        printf("é™¤æ³•é”™è¯¯: %s\n", get_last_error());
     }
 
-    // ³ıÁã´íÎó
+    // é™¤é›¶é”™è¯¯
     result = divide(10, 0, &error);
     if (error != CALC_SUCCESS) {
-        printf("¼ì²âµ½³ıÁã´íÎó: %s (´íÎóÂë: %d)\n",
+        printf("æ£€æµ‹åˆ°é™¤é›¶é”™è¯¯: %s (é”™è¯¯ç : %d)\n",
                get_last_error(), error);
-        printf("´íÎóÃèÊö: %s\n", error_code_to_string(error));
+        printf("é”™è¯¯æè¿°: %s\n", error_code_to_string(error));
     }
 }
 
-// ²âÊÔ¸ß¼¶ÔËËã
+// æµ‹è¯•é«˜çº§è¿ç®—
 void test_advanced_operations(void) {
-    printf("\n=== ¸ß¼¶ÔËËã²âÊÔ ===\n");
+    printf("\n=== é«˜çº§è¿ç®—æµ‹è¯• ===\n");
 
     CalcErrorCode error;
 
-    // Æ½·½¸ù²âÊÔ
+    // å¹³æ–¹æ ¹æµ‹è¯•
     double sqrt_result = sqrt_calc(25.0, &error);
     if (error == CALC_SUCCESS) {
-        printf("¡Ì25 = %.2f\n", sqrt_result);
+        printf("âˆš25 = %.2f\n", sqrt_result);
     }
 
-    // ¸ºÊıÆ½·½¸ù²âÊÔ
+    // è´Ÿæ•°å¹³æ–¹æ ¹æµ‹è¯•
     sqrt_result = sqrt_calc(-4.0, &error);
     if (error != CALC_SUCCESS) {
-        printf("Æ½·½¸ù´íÎó: %s\n", error_code_to_string(error));
+        printf("å¹³æ–¹æ ¹é”™è¯¯: %s\n", error_code_to_string(error));
     }
-
 }
 
-// ÃİÔËËã²âÊÔ
+// å¹‚è¿ç®—æµ‹è¯•
 void test_power_function(void) {
-    printf("\n=== ÃİÔËËã²âÊÔ ===\n");
+    printf("\n=== å¹‚è¿ç®—æµ‹è¯• ===\n");
 
     CalcErrorCode error;
 
-    // ²âÊÔ1: Õı³£Çé¿ö
+    // æµ‹è¯•1: æ­£å¸¸æƒ…å†µ
     double power_result = power(2.0, 3.0, &error);
     if (error == CALC_SUCCESS) {
         printf("2^3 = %.2f\n", power_result);
     } else {
-        printf("¼ÆËãÊ§°Ü: %s\n", get_last_error());
+        printf("è®¡ç®—å¤±è´¥: %s\n", get_last_error());
     }
 
-    // ²âÊÔ2: 0µÄ¸ºÊı´Î·½£¨Ó¦¸Ã±¨´í£©
+    // æµ‹è¯•2: 0çš„è´Ÿæ•°æ¬¡æ–¹ï¼ˆåº”è¯¥æŠ¥é”™ï¼‰
     power_result = power(0.0, -2.0, &error);
     if (error != CALC_SUCCESS) {
-        printf("¼ì²âµ½´íÎó: %s (´íÎóÂë: %d)\n",
+        printf("æ£€æµ‹åˆ°é”™è¯¯: %s (é”™è¯¯ç : %d)\n",
                get_last_error(), error);
-        printf("´íÎóÃèÊö: %s\n", error_code_to_string(error));
+        printf("é”™è¯¯æè¿°: %s\n", error_code_to_string(error));
     }
 
-    // ²âÊÔ3: ¸ºÊıµ×ÊıµÄĞ¡Êı´Î·½£¨Ó¦¸Ã±¨´í£©
+    // æµ‹è¯•3: è´Ÿæ•°åº•æ•°çš„å°æ•°æ¬¡æ–¹ï¼ˆåº”è¯¥æŠ¥é”™ï¼‰
     power_result = power(-4.0, 0.5, &error);
     if (error != CALC_SUCCESS) {
-        printf("¼ì²âµ½´íÎó: %s\n", error_code_to_string(error));
+        printf("æ£€æµ‹åˆ°é”™è¯¯: %s\n", error_code_to_string(error));
     }
 
-    // ²âÊÔ4: ÎŞĞ§ÊäÈë£¨NaN£©
-//    double invalid_num = 0.0 / 0.0;  // ÖÆÔì NaN
-//    power_result = power(invalid_num, 2.0, &error);
-    double result = divide(10.0, 0.0, &error);  // Õâ¸öÓ¦¸ÃÃ»ÎÊÌâ
+    // æµ‹è¯•4: æ— æ•ˆè¾“å…¥æ£€æµ‹
+    double zero = 0.0;
+    double result = divide(10.0, 0.0, &error);
     if (error != CALC_SUCCESS) {
-        (void )result;
-        printf("ÎŞĞ§ÊäÈë¼ì²â: %s\n", get_last_error());
+        printf("æ— æ•ˆè¾“å…¥æ£€æµ‹: %s\n", get_last_error());
     }
 }
 
-// ²âÊÔÈı½Çº¯Êı
+// æµ‹è¯•ä¸‰è§’å‡½æ•°
 void test_trig_functions(void) {
-    printf("\n=== Èı½Çº¯Êı²âÊÔ ===\n");
+    printf("\n=== ä¸‰è§’å‡½æ•°æµ‹è¯• ===\n");
 
     CalcErrorCode error;
 
-    // Õı³£Èı½Çº¯Êı¼ÆËã
+    // æ­£å¸¸ä¸‰è§’å‡½æ•°è®¡ç®—
     double sin_result = trig_calc(30.0, "degrees", "sin", &error);
     if (error == CALC_SUCCESS) {
-        printf("sin(30¡ã) = %.2f\n", sin_result);
+        printf("sin(30Â°) = %.2f\n", sin_result);
     }
 
-    // ÎŞĞ§½Ç¶ÈÄ£Ê½²âÊÔ
+    // æ— æ•ˆè§’åº¦æ¨¡å¼æµ‹è¯•
     double invalid_result = trig_calc(30.0, "invalid_mode", "sin", &error);
     if (error != CALC_SUCCESS) {
-        (void)invalid_result;  // Ã÷È·±íÊ¾¹ÊÒâ²»Ê¹ÓÃÕâ¸ö±äÁ¿
-        printf("Èı½Çº¯Êı´íÎó: %s\n", get_last_error());
-
+        printf("ä¸‰è§’å‡½æ•°é”™è¯¯: %s\n", get_last_error());
     }
 
-    // ÎŞĞ§º¯ÊıÃû²âÊÔ
+    // æ— æ•ˆå‡½æ•°åæµ‹è¯•
     invalid_result = trig_calc(30.0, "degrees", "invalid_func", &error);
     if (error != CALC_SUCCESS) {
-        (void)invalid_result;
-        printf("º¯ÊıÃû´íÎó: %s\n", error_code_to_string(error));
+        printf("å‡½æ•°åé”™è¯¯: %s\n", error_code_to_string(error));
     }
 }
 
-// Ö±½ÓÊ¹ÓÃÑéÖ¤º¯Êı
+// ç›´æ¥ä½¿ç”¨éªŒè¯å‡½æ•°
 void test_validation_functions(void) {
-    printf("\n=== ÊäÈëÑéÖ¤²âÊÔ ===\n");
+    printf("\n=== è¾“å…¥éªŒè¯æµ‹è¯• ===\n");
 
-    // Ö±½ÓÊ¹ÓÃÑéÖ¤º¯Êı£¨²»ĞèÒªÍ¨¹ı¼ÆËãÆ÷£©
-    printf("ÑéÖ¤Êı×Ö 3.14: %s\n", is_valid_number(3.14) ? "ÓĞĞ§" : "ÎŞĞ§");
-    printf("ÑéÖ¤½Ç¶ÈÄ£Ê½ 'degrees': %s\n",
-           is_valid_angle_mode("degrees") ? "ÓĞĞ§" : "ÎŞĞ§");
-    printf("ÑéÖ¤º¯ÊıÃû 'tan': %s\n",
-           is_valid_trig_function("tan") ? "ÓĞĞ§" : "ÎŞĞ§");
+    // ç›´æ¥ä½¿ç”¨éªŒè¯å‡½æ•°ï¼ˆä¸éœ€è¦é€šè¿‡è®¡ç®—å™¨ï¼‰
+    printf("éªŒè¯æ•°å­— 3.14: %s\n", is_valid_number(3.14) ? "æœ‰æ•ˆ" : "æ— æ•ˆ");
+    printf("éªŒè¯è§’åº¦æ¨¡å¼ 'degrees': %s\n",
+           is_valid_angle_mode("degrees") ? "æœ‰æ•ˆ" : "æ— æ•ˆ");
+    printf("éªŒè¯å‡½æ•°å 'tan': %s\n",
+           is_valid_trig_function("tan") ? "æœ‰æ•ˆ" : "æ— æ•ˆ");
 
-    // ²âÊÔÎŞĞ§ÊäÈë
-//    double invalid_num = 0.0 / 0.0;  // ÖÆÔì NaN
+    // æµ‹è¯•æ— æ•ˆè¾“å…¥
     double zero = 0.0;
-    double invalid_num = zero / zero;  // ÔËĞĞÊ±¼ÆËã£¬±àÒëÊ±²»»á¼ì²â
-    printf("ÑéÖ¤ NaN Êı×Ö: %s\n", is_valid_number(invalid_num) ? "ÓĞĞ§" : "ÎŞĞ§");
+    double invalid_num = zero / zero;  // è¿è¡Œæ—¶è®¡ç®—ï¼Œç¼–è¯‘æ—¶ä¸ä¼šæ£€æµ‹
+    printf("éªŒè¯ NaN æ•°å­—: %s\n", is_valid_number(invalid_num) ? "æœ‰æ•ˆ" : "æ— æ•ˆ");
 }
 
 int main(void) {
-    printf("¼ÆËãÆ÷²âÊÔ³ÌĞò\n");
-
+    printf("è®¡ç®—å™¨æµ‹è¯•ç¨‹åº\n");
     test_basic_operations();
     test_advanced_operations();
+    test_power_function();
     test_trig_functions();
     test_validation_functions();
 
+    printf("\næ‰€æœ‰æµ‹è¯•å®Œæˆï¼\n");
     return 0;
 }
-
-

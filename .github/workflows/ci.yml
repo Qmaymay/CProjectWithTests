@@ -23,6 +23,7 @@ jobs:
             generator: "Unix Makefiles"
 
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
@@ -36,15 +37,13 @@ jobs:
       - name: Install dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
+          # 简化安装，只安装必要的包
           sudo apt-get update
-          sudo apt-get install -y gcc g++ make cmake
-
-      - name: Install dependencies (Windows MinGW)
-        if: matrix.os == 'windows-latest' && matrix.compiler == 'mingw'
-        run: |
-          choco install mingw -y
+          sudo apt-get install -y cmake build-essential
 
       - name: Configure and Build
+        env:
+          TEST_BUILD: 1
         run: |
           echo "Building with ${{ matrix.compiler }} on ${{ matrix.os }}"
           
@@ -52,16 +51,15 @@ jobs:
           mkdir build
           cd build
           
-          # 配置项目 - 使用环境变量而不是CMake参数
-          export TEST_BUILD=1
+          # 配置项目
           cmake .. -G "${{ matrix.generator }}"
           
           # 构建项目
           cmake --build . --config Debug
           
-          # 显示构建结果 - 修复Windows命令
+          # 显示构建结果
           echo "=== Build Output ==="
-          if [ "$RUNNER_OS" == "Windows" ]; then
+          if [ "$RUNNER_OS" = "Windows" ]; then
             dir ..\build\lib\
           else
             ls -la ../build/lib/
@@ -73,9 +71,6 @@ jobs:
           
           # 进入测试目录
           cd calculator_tests
-          
-          # 安装测试依赖
-          pip install -r requirements.txt || echo "No requirements.txt found"
           
           # 运行测试
           python main.py
@@ -90,20 +85,14 @@ jobs:
             build/lib/
           retention-days: 7
 
-  test-summary:
+  summary:
     runs-on: ubuntu-latest
     needs: build-and-test
     if: always()
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Show Test Summary
+      - name: Test Summary
         run: |
           echo "🎯 Calculator CI Test Summary"
           echo "=============================="
-          echo "Build jobs status:"
-          {{ range needs.build-and-test.outputs.matrix }}
-          echo "- ${{ matrix.compiler }} on ${{ matrix.os }}: ${{ needs.build-and-test.result }}"
-          {{ end }}
+          echo "All build jobs completed!"

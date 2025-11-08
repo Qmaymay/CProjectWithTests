@@ -15,12 +15,15 @@ jobs:
           - os: windows-latest
             compiler: msvc
             generator: "Visual Studio 17 2022"
+            build_type: "Debug"
           - os: windows-latest
             compiler: mingw
             generator: "MinGW Makefiles"
+            build_type: "Debug"
           - os: ubuntu-latest
             compiler: gcc
             generator: "Unix Makefiles"
+            build_type: "Debug"
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
@@ -37,9 +40,13 @@ jobs:
       - name: Install dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          # 简化安装，只安装必要的包
           sudo apt-get update
           sudo apt-get install -y cmake build-essential
+
+      - name: Install MinGW (Windows)
+        if: matrix.os == 'windows-latest' && matrix.compiler == 'mingw'
+        run: |
+          choco install mingw -y
 
       - name: Configure and Build
         env:
@@ -54,27 +61,23 @@ jobs:
           # 配置项目
           cmake .. -G "${{ matrix.generator }}"
           
-          # 构建项目
-          cmake --build . --config Debug
-          
-          # 显示构建结果
-          echo "=== Build Output ==="
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            dir ..\build\lib\
+          # 构建项目 - MSVC需要指定配置
+          if [ "${{ matrix.compiler }}" == "msvc" ]; then
+            cmake --build . --config ${{ matrix.build_type }}
           else
-            ls -la ../build/lib/
+            cmake --build .
           fi
+
+      - name: Show Build Results
+        run: |
+          echo "=== Build Output ==="
+          find build/ -name "*.dll" -o -name "*.exe" -o -name "*.so" | head -10
 
       - name: Run Tests
         run: |
           echo "Running tests for ${{ matrix.compiler }}"
-          
-          # 进入测试目录
           cd calculator_tests
-          
-          # 运行测试
           python main.py
-          
           echo "✅ Tests completed for ${{ matrix.compiler }}"
 
       - name: Upload Build Artifacts
@@ -82,7 +85,7 @@ jobs:
         with:
           name: calculator-${{ matrix.compiler }}-${{ matrix.os }}
           path: |
-            build/lib/
+            build/
           retention-days: 7
 
   summary:
@@ -95,4 +98,4 @@ jobs:
         run: |
           echo "🎯 Calculator CI Test Summary"
           echo "=============================="
-          echo "All build jobs completed!"
+          echo "Build matrix completed!"

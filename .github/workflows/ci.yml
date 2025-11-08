@@ -52,15 +52,20 @@ jobs:
           mkdir build
           cd build
           
-          # 配置项目
-          cmake .. -G "${{ matrix.generator }}" -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=../build/lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=../build/lib
+          # 配置项目 - 使用环境变量而不是CMake参数
+          export TEST_BUILD=1
+          cmake .. -G "${{ matrix.generator }}"
           
           # 构建项目
           cmake --build . --config Debug
           
-          # 显示构建结果
+          # 显示构建结果 - 修复Windows命令
           echo "=== Build Output ==="
-          ls -la ../build/lib/ || dir ../build/lib/
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            dir ..\build\lib\
+          else
+            ls -la ../build/lib/
+          fi
 
       - name: Run Tests
         run: |
@@ -88,55 +93,17 @@ jobs:
   test-summary:
     runs-on: ubuntu-latest
     needs: build-and-test
+    if: always()
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
 
       - name: Show Test Summary
         run: |
           echo "🎯 Calculator CI Test Summary"
           echo "=============================="
-          echo "✅ All ${{ needs.build-and-test.result }} jobs completed successfully!"
-          echo ""
-          echo "📊 Build Matrix Results:"
-          echo "------------------------"
+          echo "Build jobs status:"
           {{ range needs.build-and-test.outputs.matrix }}
-          echo "- ${{ matrix.compiler }} on ${{ matrix.os }}: ✅ Success"
+          echo "- ${{ matrix.compiler }} on ${{ matrix.os }}: ${{ needs.build-and-test.result }}"
           {{ end }}
-          
-          echo ""
-          echo "📦 Generated Artifacts:"
-          echo "----------------------"
-          find artifacts -name "*.dll" -o -name "*.so" -o -name "*.exe" | while read file; do
-            echo "📄 $(basename $file)"
-          done || echo "No artifacts found"
-
-  deploy-docs:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    needs: build-and-test
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Generate Build Report
-        run: |
-          echo "# 🧮 Calculator Build Report" > build-report.md
-          echo "" >> build-report.md
-          echo "## 📅 Build Date: $(date)" >> build-report.md
-          echo "## 🔧 Compilers Tested:" >> build-report.md
-          echo "- ✅ MSVC (Windows)" >> build-report.md
-          echo "- ✅ MinGW (Windows)" >> build-report.md
-          echo "- ✅ GCC (Linux)" >> build-report.md
-          echo "" >> build-report.md
-          echo "## 📊 Test Results" >> build-report.md
-          echo "All tests passed across all compiler configurations! 🎉" >> build-report.md
-          
-          cat build-report.md

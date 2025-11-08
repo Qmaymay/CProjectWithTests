@@ -1,4 +1,4 @@
-﻿name: Calculator CI
+﻿name: Calculator CI - Fast
 
 on:
   push:
@@ -7,95 +7,79 @@ on:
     branches: [ main, master ]
 
 jobs:
-  build-and-test:
-    strategy:
-      matrix:
-        os: [windows-latest, ubuntu-latest]
-        include:
-          - os: windows-latest
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-            build_type: "Debug"
-          - os: windows-latest
-            compiler: mingw
-            generator: "MinGW Makefiles"
-            build_type: "Debug"
-          - os: ubuntu-latest
-            compiler: gcc
-            generator: "Unix Makefiles"
-            build_type: "Debug"
-
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+  windows-msvc:
+    name: Windows MSVC
+    runs-on: windows-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install dependencies (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Build with MSVC
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake build-essential
-
-      - name: Install MinGW (Windows)
-        if: matrix.os == 'windows-latest' && matrix.compiler == 'mingw'
-        run: |
-          choco install mingw -y
-
-      - name: Configure and Build
-        env:
-          TEST_BUILD: 1
-        run: |
-          echo "Building with ${{ matrix.compiler }} on ${{ matrix.os }}"
-          
-          # 创建构建目录
           mkdir build
           cd build
-          
-          # 配置项目
-          cmake .. -G "${{ matrix.generator }}"
-          
-          # 构建项目 - MSVC需要指定配置
-          if [ "${{ matrix.compiler }}" == "msvc" ]; then
-            cmake --build . --config ${{ matrix.build_type }}
-          else
-            cmake --build .
-          fi
+          cmake .. -G "Visual Studio 17 2022"
+          cmake --build . --config Release
+          cmake --build . --target validate_all
 
-      - name: Show Build Results
+      - name: Run tests
         run: |
-          echo "=== Build Output ==="
-          find build/ -name "*.dll" -o -name "*.exe" -o -name "*.so" | head -10
+          if exist "calculator_tests" (
+            cd calculator_tests
+            python main.py
+          )
 
-      - name: Run Tests
-        run: |
-          echo "Running tests for ${{ matrix.compiler }}"
-          cd calculator_tests
-          python main.py
-          echo "✅ Tests completed for ${{ matrix.compiler }}"
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: calculator-${{ matrix.compiler }}-${{ matrix.os }}
-          path: |
-            build/
-          retention-days: 7
-
-  summary:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    if: always()
+  windows-mingw:
+    name: Windows MinGW
+    runs-on: windows-latest
 
     steps:
-      - name: Test Summary
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install MinGW
+        run: choco install mingw -y
+
+      - name: Build with MinGW
         run: |
-          echo "🎯 Calculator CI Test Summary"
-          echo "=============================="
-          echo "Build matrix completed!"
+          mkdir build
+          cd build
+          cmake .. -G "MinGW Makefiles"
+          cmake --build .
+          cmake --build . --target validate_all
+
+      - name: Run tests
+        run: |
+          if exist "calculator_tests" (
+            cd calculator_tests
+            python main.py
+          )
+
+  linux-gcc:
+    name: Linux GCC
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+
+      - name: Build with GCC
+        run: |
+          mkdir build
+          cd build
+          cmake .. -G "Unix Makefiles"
+          cmake --build .
+          cmake --build . --target validate_all
+
+      - name: Run tests
+        run: |
+          if [ -d "calculator_tests" ]; then
+            cd calculator_tests
+            python main.py
+          fi

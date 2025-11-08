@@ -5,19 +5,18 @@ project(Calculator LANGUAGES C)
 
 # ==================== 字符编码设置 ====================
 if(MSVC)
-    # 对于 MSVC，强制使用 UTF-8 编码
+    # 对于 MSVC，只使用 /utf-8 选项（它包含了 source-charset 和 execution-charset）
     add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-    add_compile_options("$<$<C_COMPILER_ID:MSVC>:/source-charset:utf-8>")
-    add_compile_options("$<$<C_COMPILER_ID:MSVC>:/execution-charset:utf-8>")
 
     # 禁用特定警告
     add_compile_options("$<$<C_COMPILER_ID:MSVC>:/wd4828>")  # 字符编码警告
 else()
-    # 对于 GCC/Clang
+    # 对于 GCC/Clang/MinGW
     add_compile_options(-finput-charset=UTF-8)
     add_compile_options(-fexec-charset=UTF-8)
     add_compile_options(-fwide-exec-charset=UTF-8)
 endif()
+
 
 # ==================== 输出目录设置 ====================
 set(BUILD_BASE_DIR ${CMAKE_BINARY_DIR})

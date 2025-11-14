@@ -21,19 +21,19 @@ endif()
 # ==================== 输出目录设置 ====================
 set(BUILD_BASE_DIR ${CMAKE_BINARY_DIR})
 
-# Simple mode detection
-if(DEFINED ENV{TEST_BUILD})
-    # build.bat test mode: all files in lib directory
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BUILD_BASE_DIR}/lib)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BUILD_BASE_DIR}/lib)
-    message(STATUS "Test mode: all files in lib directory")
-else()
-    # CLion mode: executable in root directory
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BUILD_BASE_DIR})
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BUILD_BASE_DIR}/lib)
-    message(STATUS "CLion mode: executable in build root")
-endif()
+# 统一输出到lib目录，无论什么模式
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BUILD_BASE_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BUILD_BASE_DIR}/lib)
 
+message(STATUS "Output directory: ${BUILD_BASE_DIR}/lib")
+
+# 设置不同配置的输出目录（确保Debug/Release都到lib）
+foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BUILD_BASE_DIR}/lib)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BUILD_BASE_DIR}/lib)
+    
+endforeach()
 # ==================== 编译器设置 ====================
 if(MSVC)
     add_compile_options(/utf-8)
